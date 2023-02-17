@@ -3,7 +3,7 @@
 ![Screenshot](docs/architecture_diagram.jpg)
 
 ## Background
-This repository contains an end-to-end Production ML System using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and MLOps services are scheduled and orchestrated at a regular cadence.
+This repository contains an end-to-end Production ML System using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and services are orchestrated at a regular cadence.
 
 Below are the core services in this ML system:
 1. Data Engineering Service
@@ -15,6 +15,8 @@ This ML System leverages the following technologies:
 2. Python for ML pipeline development and Drift Detection Pipeline
 3. MLflow for model artifact management
 4. Feature Tables for access to high-quality Analytics and Model Ready Data Sets in low latency
+5. Great Expectations for Data Quality Validation
+6. EvidentlyAI for Drift Detection
 
 ## Data Engineering Service
 
