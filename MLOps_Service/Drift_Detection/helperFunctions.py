@@ -213,6 +213,7 @@ def get_drift_data(beginning, mid):
     # Get data for comparison
     today = datetime.now()
     cutoff = today - timedelta(days=60)
+    cutoff = cutoff.strftime("%Y-%m-%d")
     fs = feature_store.FeatureStoreClient()
     cutoff = "SELECT * FROM example.training WHERE Date >= {0}".format(cutoff)
     data = spark.sql(query)
