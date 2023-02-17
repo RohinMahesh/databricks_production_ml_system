@@ -22,20 +22,6 @@ While monitoring is a powerful method for covariate shifts, it is vital to have 
 
 In this project, we focus on monitoring covariate shifts in our input feature space by using the EvidentlyAI library.
 
-## Overview
-
-This monitoring services uses the following AWS components:
-
-- EventBridge (CloudWatch Events): triggers monitoring service on a weekly cadence
-- ECR: contains Docker image of monitoring service
-- Lambda: serverless monitoring service that calculates drift, writes status to SNS and publishes HTML files for webpage
-- S3: hosts the static webpage for Evidently AI drift status
-- SNS: contains message of drift status that is emailed to client
-
-Configuration information can be located in docs/setup.md.
-
-![Screenshot](docs/architecture_drift_monitoring.png)
-
 ## References
 
 Great Expectations, https://docs.greatexpectations.io/docs/, 2022

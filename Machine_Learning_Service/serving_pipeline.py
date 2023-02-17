@@ -25,6 +25,7 @@ clf = load_mlflow(model_name=model_name, stage="Production")
 # Make predictions
 todays_date = date.today()
 data = data.toPandas()
+del data["CustomerState"]
 preds = clf.predict_proba(data)
 preds = [x[1] for x in preds]
 data["Prediction"] = preds
@@ -32,5 +33,5 @@ data["Prediction_Date"] = [todays_date] * len(preds)
 
 # Store predictions in Blob
 path = f"/example_classifier_predictions/{todays_date}.csv"
-data = data[["ID", "Prediction", "Preidction_Date"]]
+data = data[["ID", "Prediction", "Prediction_Date"]]
 data.to_csv(path)
