@@ -16,6 +16,7 @@ from sklearn.linear_model import LogisticRegression
 # Load data
 today = datetime.now()
 cutoff = today - timedelta(days=730)
+cutoff = cutoff.strftime("%Y-%m-%d")
 
 fs = feature_store.FeatureStoreClient()
 query = "SELECT * FROM example.training WHERE Date >= {0}".format(cutoff)
