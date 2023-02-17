@@ -24,11 +24,11 @@ data = spark.sql(query)
 
 # Engineer features
 data = data.groupby("CustomerNumber").agg(
-    func.min("").alias("Feature1"),
-    func.max("").alias("Feature2"),
-    func.sum("").alias("Feature3"),
-    func.last("").alias("Feature4"),
-    func.last("").alias("Target"),
+    func.min("Feature1").alias("Feature1"),
+    func.max("Feature2").alias("Feature2"),
+    func.sum("Feature3").alias("Feature3"),
+    func.last("Feature4").alias("Feature4"),
+    func.last("Target").alias("Target"),
 )
 
 # Convert to Pandas
