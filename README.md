@@ -3,7 +3,7 @@
 ![Screenshot](docs/architecture_diagram.jpg)
 
 ## Background
-This repository contains an end-to-end Production ML System using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and services are orchestrated at a regular cadence.
+This repository contains an end-to-end Production ML System using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and services are scheduled at a regular cadence.
 
 Below are the core services in this ML system:
 1. Data Engineering Service
