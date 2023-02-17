@@ -26,8 +26,7 @@ clf = load_mlflow(model_name=model_name, stage="Production")
 todays_date = date.today()
 data = data.toPandas()
 del data["CustomerState"]
-preds = clf.predict_proba(data)
-preds = [x[1] for x in preds]
+preds = clf.predict(data)
 data["Prediction"] = preds
 data["Prediction_Date"] = [todays_date] * len(preds)
 

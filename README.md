@@ -31,7 +31,7 @@ Details for the Data Engineering Services and its components can be found in the
 
 ## Machine Learning Service
 
-The Machine Learning Service consists of 2 scheduled pipelines that leverages the outputs of the Data Engineering Service to train an ML pipeline and use that pipeline to service predictions for downstream consumption. Model training and serving pipelines utilizes the Databricks MLflow integration for model artifact management and the respective Databricks Feature Store tables.
+The Machine Learning Service consists of 3 scheduled pipelines that leverages the outputs of the Data Engineering Service to train an ML pipeline and use that pipeline to service predictions for downstream consumption. Model training and serving pipelines utilizes the Databricks MLflow integration for model artifact management and the respective Databricks Feature Store tables. Finally, the overall ML pipeline is evaluated and retrained if model has deteriorated.
 
 Details for the Machine Learning Services and its components can be found in the "Machine_Learning_Service" folder: 
 1. Model Training Pipeline: trains ML pipeline, which packs both the feature extractor and ML model into a serialized scikit-learn Pipeline object. This is scheduled to run on a monthly cadence.
@@ -40,6 +40,8 @@ Details for the Machine Learning Services and its components can be found in the
 2. Model Serving Pipeline: services ML pipeline for predictions. This is scheduled to run on a daily cadence.
     - MLflowFunctions.py
     - serving_pipeline.py
+3. Model Performance Evaluation Pipeline: evaluates ML pipeline on last 31 days worth of data (accounting for a 1-day label delay) and triggers model retraining based on acceptable performance of ML pipeline.
+    - perf_eval_pipeline.py
 
 ## MLOps Service
 
