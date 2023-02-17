@@ -15,7 +15,7 @@ from sklearn.linear_model import LogisticRegression
 
 # Load data
 fs = feature_store.FeatureStoreClient()
-query = "SELECT * FROM example.serving"
+query = "SELECT * FROM online.serving"
 data = spark.sql(query)
 model_name = "example_classifier"
 

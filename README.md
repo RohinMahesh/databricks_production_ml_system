@@ -6,16 +6,51 @@
 This repository contains an end-to-end Production ML System using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and MLOps services are scheduled and orchestrated at a regular cadence.
 
 Below are the core services in this ML system:
-1. Data Engineering Service: ETL pipelines to create Analytics and Model Ready Data Sets. All pipelines are scheduled to execute at a daily cadence:
-    - Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS). This is scheduled to run on a daily cadence.
-    - Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is scheduled to run on a daily cadence.
-2. Machine Learning Service: model training and serving pipelines utilizing Databricks MLflow integration for model artifact management.
-    - Model Training Pipeline: trains ML pipeline, which packs both the feature extractor and ML model into a serialized scikit-learn Pipeline object. This is scheduled to run on a daily cadence.
-    - Model Serving Pipeline: services ML pipeline for predictions. This is scheduled to run on a daily cadence.
-3. MLOps Service: data quality validation and drift detection pipelines to be integrated into downstream CI/CD/CT pipelines. These pipelines will store HTML artifacts in Blob for downstream consumption.
-    - Data Quality Validation Pipeline: upstream data quality validation framework for relevant source-aligned data assets. This is scheduled to run on a daily cadence.
-    - Drift Detection: drift detection framework to calculate distributional shifts in our ARDS. This is scheduled to run on a monthly cadence. Please visit my existing Drift Detection repository for more information. 
+1. Data Engineering Service
+2. Machine Learning Service
+3. MLOps Service
+
+This ML System leverages the following technologies:
+1. PySpark for Data Engineering Services and Data Quality Validation Pipeline
+2. Python for ML pipeline development and Drift Detection Pipeline
+3. MLflow for model artifact management
+4. Feature Tables for access to high-quality Analytics and Model Ready Data Sets in low latency
+
+## Data Engineering Service
+
+The Data Engineering Service consists of 3 scheduled pipelines that performs ETL from the upstream data assets into downstream feature tables. In this system, the source-aligned data assets are in a CSV format and the downstream data assets resulting from these pipelines are stored in a Delta format and in an Azure SQL Server table. 
+
+Details for the Data Engineering Services and its components can be found in the "Data_Engineering_Service" folder: 
+1. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS). This is updated using the following script and is scheduled to run on a daily cadence:
+    - feature_store_training_daily.py
+2. Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is updated using the following script and is scheduled to run on a daily cadence:
+    - feature_store_training_daily.py
+    - online_feature_table_daily.py
+
+## Machine Learning Service
+
+The Machine Learning Service consists of 2 scheduled pipelines that leverages the outputs of the Data Engineering Service to train an ML pipeline and use that pipeline to service predictions for downstream consumption. Model training and serving pipelines utilizes the Databricks MLflow integration for model artifact management and the respective Databricks Feature Store tables.
+
+Details for the Machine Learning Services and its components can be found in the "Machine_Learning_Service" folder: 
+1. Model Training Pipeline: trains ML pipeline, which packs both the feature extractor and ML model into a serialized scikit-learn Pipeline object. This is scheduled to run on a monthly cadence.
+    - MLflowFunctions.py
+    - training_pipeline.py
+2. Model Serving Pipeline: services ML pipeline for predictions. This is scheduled to run on a daily cadence.
+    - MLflowFunctions.py
+    - serving_pipeline.py
+
+## MLOps Service
+
+The MLOps Service consists of 2 scheduled pipelines that leverages the outputs of the Data Engineering Service and the Machine Learning Service to validate the integrity of the data assets and detect any data drift. The data quality validation and drift detection pipelines will be integrated into downstream CI/CD/CT and alerting functionalities. These pipelines will store HTML artifacts in Blob and DBFS for downstream consumption.
+
+Details for the MLOps Services and its components can be found in the "MLOps_Service" folder: 
+1. Data Quality Validation Pipeline: upstream data quality validation framework for relevant data assets. This is scheduled to run on a daily cadence.
+    - validation.py
+2. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS. This is scheduled to run on a monthly cadence.
+    - helperFunctions.py
+    - drift_detection.py
 
 ## Orchestration
-This ML system consists of 6 pipelines that are scheduled and orchestrated using Databricks Jobs. For full control over your jobs, it is recommended to leverage Azure DevOps while utilizing Databricks CLI. 
+This ML system consists of various pipelines that are scheduled and orchestrated using Databricks Jobs. For full control over your jobs, test converge, and CI/CD/CT, it is recommended to leverage Azure DevOps and the Databricks CLI. 
+
 

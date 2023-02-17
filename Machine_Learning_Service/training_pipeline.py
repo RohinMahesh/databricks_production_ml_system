@@ -19,7 +19,7 @@ cutoff = today - timedelta(days=730)
 cutoff = cutoff.strftime("%Y-%m-%d")
 
 fs = feature_store.FeatureStoreClient()
-query = "SELECT * FROM example.training WHERE Date >= {0}".format(cutoff)
+query = "SELECT * FROM offline.training WHERE Date >= {0}".format(cutoff)
 data = spark.sql(query)
 
 # Engineer features
