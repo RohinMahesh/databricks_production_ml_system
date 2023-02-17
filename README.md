@@ -51,6 +51,6 @@ Details for the MLOps Services and its components can be found in the "MLOps_Ser
     - drift_detection.py
 
 ## Orchestration
-This ML system consists of various pipelines that are scheduled and orchestrated using Databricks Jobs. For full control over your jobs, test converge, and CI/CD/CT, it is recommended to leverage Azure DevOps and the Databricks CLI. 
+This ML system consists of various pipelines that are orchestrated using Databricks Jobs. For full control over your jobs, test converge, and CI/CD/CT, it is recommended to leverage Azure DevOps and the Databricks CLI. It is also recommended to utilize the GitHub Databricks integration for orchestration of the Databricks Jobs/Azure DevOps Pipelines.
 
 
