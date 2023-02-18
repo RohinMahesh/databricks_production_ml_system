@@ -5,7 +5,7 @@ import mlflow
 import mlflow.sklearn
 from mlflow.tracking import MlflowClient
 from mlflow.models.signature import infer_signature
-from MLflowFunctions import load_mlflow
+from helperFunctions import load_mlflow
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline

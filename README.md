@@ -35,12 +35,13 @@ The Machine Learning Service consists of 3 scheduled pipelines that leverages th
 
 Details for the Machine Learning Services and its components can be found in the "Machine_Learning_Service" folder: 
 1. Model Training Pipeline: trains ML pipeline, which packs both the feature extractor and ML model into a serialized scikit-learn Pipeline object. This is scheduled to run on a monthly cadence.
-    - MLflowFunctions.py
+    - helperFunctions.py
     - training_pipeline.py
 2. Model Serving Pipeline: services ML pipeline for predictions. This is scheduled to run on a daily cadence.
-    - MLflowFunctions.py
+    - helperFunctions.py
     - serving_pipeline.py
 3. Model Performance Evaluation Pipeline: evaluates ML pipeline on last 31 days worth of data (accounting for a 1-day label delay) and triggers model retraining based on acceptable performance of ML pipeline.
+    - helperFunctions.py
     - perf_eval_pipeline.py
 
 ## MLOps Service

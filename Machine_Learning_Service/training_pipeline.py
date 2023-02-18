@@ -5,7 +5,7 @@ import mlflow
 import mlflow.sklearn
 from mlflow.tracking import MlflowClient
 from mlflow.models.signature import infer_signature
-from MLflowFunctions import register_mlflow
+from helperFunctions import register_mlflow
 import pyspark.sql.functions as func
 import pandas as pd
 from sklearn.compose import ColumnTransformer
