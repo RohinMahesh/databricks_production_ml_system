@@ -7,9 +7,11 @@ from evidently.model_profile import Profile
 from evidently.model_profile.sections import DataDriftProfileSection
 from evidently.options import DataDriftOptions
 from evidently.report import Report
-from helperFunctions import calculate_drift, create_drift_report, get_drift_data
 import json
 import pandas as pd
+
+from utils.helperfunctions import calculate_drift, create_drift_report, get_drift_data
+
 
 # Identify filtering conditions
 today = datetime.now()

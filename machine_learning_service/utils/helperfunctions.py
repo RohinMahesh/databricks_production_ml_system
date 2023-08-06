@@ -1,39 +1,55 @@
+from dataclasses import dataclass
+from typing import Dict
+
 from datetime import datetime
 import mlflow
 import mlflow.sklearn
 from mlflow.tracking import MlflowClient
 from mlflow.models.signature import infer_signature
+import pandas as pd
+import pyspark.sql.functions as func
+
+from utils.constants import (
+    CATEGORICAL_COLUMNS,
+    CUTOFF,
+    EXPERIMENT_NAME,
+    HYPERPARAMS,
+    MODEL_NAME,
+    MODEL_TRAINING_QUERY,
+    RUN_NAME,
+    TARGET_COL,
+    USER,
+)
 
 
 def register_mlflow(
-    experiment_name,
-    run_name,
-    model_name,
-    user,
-    data,
-    model,
-    parameters,
-    stage="Staging",
+    data: pd.DataFrame,
+    model: Pipeline,
+    experiment_name: str = EXPERIMENT_NAME,
+    run_name: str = RUN_NAME,
+    model_name: str = MODEL_NAME,
+    user: str = USER,
+    parameters: dict = HYPERPARAMS,
+    stage: str = "Staging",
 ):
-    """Register ML model artifacts in MLflow
+    """
+    Register ML model artifacts in MLflow
 
-    Args:
-        experiment_name (String):
-            Name of your experiment
-        run_name (String):
-            Name of your ML run
-        model_name (String):
-            Name of your ML artifact
-        user (String):
-            Name of ML engineer registering ML artifact
-        data (Pandas DataFrame):
-            Reference data for signature
-        model (Scikit-learn Pipeline):
-            ML pipeline
-        parameters (Dict):
-            Hyperparameters for ML pipeline
-        stage (String):
-            MLflow environment ML artifact has been promoted to
+    :param data: reference data for signature
+    :param model: ML pipeline
+    :param experiment_name: optional name of the experiment,
+        defaults to EXPERIMENT_NAME
+    :param run_name: optional name of the ML run,
+        defaults to RUN_NAME
+    :param model_name: optional name of your the artifact,
+        defaults to MODEL_NAME
+    :param user: optional name of the ML engineer registering the ML artifact,
+        defaults to USER
+    :param parameters: optional hyperparameters for the ML pipeline,
+        defaults to HYPERPARAMETERS
+    :param stage: optional MLflow environment the ML artifact has been promoted to,
+        defaults to "Staging"
+    :returns None
     """
     mlflow.set_experiment(experiment_name)
     with mlflow.start_run(run_name=run_name) as run:
@@ -85,17 +101,13 @@ def register_mlflow(
     )
 
 
-def load_mlflow(model_name, stage):
-    """Get production model from MLflow
+def load_mlflow(model_name: str, stage: str):
+    """
+    Gets production model from MLflow
 
-    Args:
-        model_name (String):
-            Name of your model
-        stage (String):
-            Stage in MLflow
-
-    Returns:
-        model: Production model artifact
+    :param model_name: name of your model
+    :param stage: MLflow stage
+    :returns model: model artifact
     """
     model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
     return model
