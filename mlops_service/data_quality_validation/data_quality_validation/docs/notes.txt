@@ -1,0 +1,10 @@
+Running validations.py will create the following folders in your DBFS location:
+
+1. checkpoints: YAML file for your defined checkpoint configuration
+2. expectations: JSON of your expectation suite 
+3. profilers: any defined profilers
+4. uncommitted: 
+    4.1: data_docs: human readable results of your validations 
+    4.2: validations: historical results of your validations stored as JSON files
+
+
