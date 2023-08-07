@@ -1,3 +1,5 @@
+from typing import List
+
 from databricks import feature_store
 from databricks.feature_store.entities.feature_lookup import FeatureLookup
 from datetime import datetime, timedelta
@@ -10,46 +12,53 @@ from evidently.report import Report
 import json
 import pandas as pd
 
+from utils.constants import (
+    CATEGORICAL_COLS,
+    CONTAINER,
+    D_TIME,
+    HTML_DIRECTORY,
+    MOUNT_NAME,
+    NUMERICAL_COLS,
+    STORAGE,
+    STORAGE_ACC_KEY,
+    TARGET,
+)
+
 
 def calculate_drift(
-    reference,
-    comparison,
-    target,
-    numerical_f,
-    categorical_f,
-    statTest="psi",
-    thresh=0.15,
-    prediction=None,
-    Id=None,
-    d_time=None,
+    reference: pd.DataFrame,
+    comparison: pd.DataFrame,
+    target: str = TARGET,
+    numerical_f: List[str] = NUMERICAL_COLS,
+    categorical_f: List[str] = CATEGORICAL_COLS,
+    statTest: str = "psi",
+    thresh: float = 0.15,
+    prediction: str = None,
+    Id: str = None,
+    d_time: str = D_TIME,
 ):
-    """Calculates Drift
+    """
+    Calculates drift
 
-    Args:
-        reference (Pandas DataFrame):
-            Reference data for drift evaluation
-        comparison (Pandas DataFrame):
-            Comparison data for drift evaluation
-        target (String):
-            Target variable
-        numerical_f (List):
-            List of numerical covariates
-        categorical_f (List):
-            List of categorical covariates
-        statTest (String, optional):
-            Statistical test. Defaults to "psi".
-        thresh (Float, optional):
-            Threshold for statistical test. Defaults to 0.15.
-        prediction (String, optional):
-            Column with ML model predictions. Defaults to None.
-        Id (String, optional):
-            Unique identifier. Defaults to None.
-        d_time (String, optional):
-            Datetime column. Defaults to None.
-
-    Returns:
-        drift_profile
-
+    :param reference: reference data for drift evaluation
+    :param comparison: comparison data for drift evaluation
+    :param target: optional target variable,
+        defaults to TARGET
+    :param numerical_f: optional list of numerical covariates,
+        defaults to NUMERICAL_COLS
+    :param categorical_f: list of categorical covariates,
+        defaults to CATEGORICAL_COLS
+    :param statTest: optional statistical test,
+        defaults to "psi"
+    :param thresh: optional threshold for the statistical test,
+        defaults to 0.15
+    :param prediction: optional column with ML model predictions,
+        defaults to None
+    :param Id: optional unique identifier,
+        defaults to None
+    :param d_time: optional datetime column,
+        defaults to D_TIME
+    :returns drift_profile: dictionary containing results of statistical tests
     """
     # Configure mapping
     columnMapping = ColumnMapping()
@@ -80,81 +89,63 @@ def calculate_drift(
     )
 
     # Store locally to tmp directory in DBFS
-    drift_report_html.save_html("dbfs:/FileStore/tmp/index.html")
+    drift_report_html.save_html(HTML_DIRECTORY)
 
     # Mount blob container and then move file into container
-    storage = ""
-    container = ""
-    mount_name = ""
-    storage_acc_key = ""
-
     dbutils.fs.mount(
-        source=f"wasbs://{container}@{storage}.blob.core.windows.net",
-        mount_point=f"/mnt/{mount_name}",
+        source=f"wasbs://{CONTAINER}@{STORAGE}.blob.core.windows.net",
+        mount_point=f"/mnt/{MOUNT_NAME}",
         extra_configs={
-            f"fs.azure.account.key.{storage}.blob.core.windows.net": f"{storage_acc_key}"
+            f"fs.azure.account.key.{STORAGE}.blob.core.windows.net": f"{STORAGE_ACC_KEY}"
         },
     )
     dbutils.fs.cp(
         "dbfs:/FileStore/tmp/index.html",
-        f"dbfs:/mnt/{mount_name}/index.html",
+        f"dbfs:/mnt/{MOUNT_NAME}/index.html",
     )
     # Unmount container
-    dbutils.fs.unmount(f"/mnt/{mount_name}")
+    dbutils.fs.unmount(f"/mnt/{MOUNT_NAME}")
     return drift_profile
 
 
 def create_drift_report(
-    reference,
-    comparison,
-    target,
-    numerical_f,
-    categorical_f,
-    statTest="psi",
-    thresh=0.15,
-    prediction=None,
-    Id=None,
-    d_time=None,
+    reference: pd.DataFrame,
+    comparison: pd.DataFrame,
+    target: str = TARGET,
+    numerical_f: List[str] = NUMERICAL_COLS,
+    categorical_f: List[str] = CATEGORICAL_COLS,
+    statTest: str = "psi",
+    thresh: float = 0.15,
+    prediction: str = None,
+    Id: str = None,
+    d_time: str = D_TIME,
 ):
-    """Create Drift Report
+    """
+    Create drift report
 
-    Args:
-        reference (Pandas DataFrame):
-            Reference data for drift evaluation
-        comparison (Pandas DataFrame):
-            Comparison data for drift evaluation
-        target (String):
-            Target variable
-        numerical_f (List):
-            List of numerical covariates
-        categorical_f (List):
-            List of categorical covariates
-        statTest (String, optional):
-            Statistical test. Defaults to "psi".
-        thresh (Float, optional):
-            Threshold for statistical test. Defaults to 0.15.
-        prediction (String, optional):
-            Column with ML model predictions. Defaults to None.
-        Id (String, optional):
-            Unique identifier. Defaults to None.
-        d_time (String, optional):
-            Datetime column. Defaults to None.
-
-    Returns:
-        drift_report (Dict):
-            JSON structure of drift report
+    :param reference: reference data for drift evaluation
+    :param comparison: comparison data for drift evaluation
+    :param target: optional target variable,
+        defaults to TARGET
+    :param numerical_f: optional list of numerical covariates,
+        defaults to NUMERICAL_COLS
+    :param categorical_f: list of categorical covariates,
+        defaults to CATEGORICAL_COLS
+    :param statTest: optional statistical test,
+        defaults to "psi"
+    :param thresh: optional threshold for the statistical test,
+        defaults to 0.15
+    :param prediction: optional column with ML model predictions,
+        defaults to None
+    :param Id: optional unique identifier,
+        defaults to None
+    :param d_time: optional datetime column,
+        defaults to D_TIME
+    :returns drift_report: dictionary containing drift report
     """
     drift_profile = calculate_drift(
         reference,
         comparison,
-        target,
-        numerical_f,
-        categorical_f,
-        statTest,
-        thresh,
-        prediction,
-        Id,
-        d_time,
     )
     # Convert to JSON
     drift_profile = drift_profile.json()

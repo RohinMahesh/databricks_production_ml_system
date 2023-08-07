@@ -10,29 +10,34 @@ from evidently.report import Report
 import json
 import pandas as pd
 
+from utils.constants import (
+    BEGINNING,
+    CATEGORICAL_COLS,
+    CONTAINER,
+    D_TIME,
+    HTML_DIRECTORY,
+    MID,
+    MOUNT_NAME,
+    NUMERICAL_COLS,
+    STORAGE,
+    STORAGE_ACC_KEY,
+    TARGET,
+)
 from utils.helperfunctions import calculate_drift, create_drift_report, get_drift_data
 
 
-# Identify filtering conditions
-today = datetime.now()
-beginning = today - timedelta(days=14)
-mid = today - timedelta(days=7)
+def drift_detection():
+    """
+    Gets drift report for downstream consumption
 
-# Extract comparison and reference data
-comparison_data, reference_data = get_drift_data(beginning, mid)
+    :returns drift_report: dictionary containing drift status and values
+    """
+    # Extract comparison and reference data
+    comparison_data, reference_data = get_drift_data(BEGINNING, MID)
 
-# Define required input for drift detection
-target = "Target"
-numerical = ["Feature1", "Feature2", "Feature3"]
-categorical = ["Feature4"]
-d_time = "Date"
-
-# Get drift report
-drift_report = create_drift_report(
-    reference=reference_data,
-    comparison=comparison_data,
-    target=target,
-    numerical_f=numerical,
-    categorical_f=categorical,
-    d_time=d_time,
-)
+    # Get drift report
+    drift_report = create_drift_report(
+        reference=reference_data,
+        comparison=comparison_data,
+    )
+    return drift_report
