@@ -15,17 +15,10 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.linear_model import LogisticRegression
 
 from utils.constants import (
-    CATEGORICAL_COLUMNS,
     COLS_FOR_REMOVAL,
-    CUTOFF,
-    EXPERIMENT_NAME,
-    HYPERPARAMS,
     MODEL_NAME,
     MODEL_SERVING_QUERY,
     PREDICTION_COLS,
-    RUN_NAME,
-    TARGET_COL,
-    USER,
 )
 from utils.helperfunctions import load_mlflow
 

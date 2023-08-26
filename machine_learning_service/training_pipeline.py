@@ -16,14 +16,9 @@ from sklearn.linear_model import LogisticRegression
 
 from utils.constants import (
     CATEGORICAL_COLUMNS,
-    CUTOFF_TRAIN,
-    EXPERIMENT_NAME,
     HYPERPARAMS,
-    MODEL_NAME,
     MODEL_TRAINING_QUERY,
-    RUN_NAME,
     TARGET_COL,
-    USER,
 )
 
 from utils.helperfunctions import register_mlflow

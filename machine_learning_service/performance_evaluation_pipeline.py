@@ -16,24 +16,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from utils.constants import (
-    CATEGORICAL_COLUMNS,
     CUTOFF_EVAL,
-    CUTOFF_TRAIN,
-    EXPERIMENT_NAME,
-    HYPERPARAMS,
-    MODEL_NAME,
-    MODEL_TRAINING_QUERY,
     PERFORMANCE_EVAL_COLS,
     PERFORMANCE_EVAL_QUERY,
     PREDICTIONS_PATH,
-    RUN_NAME,
-    TARGET_COL,
     THRESHOLD_RETRAIN,
-    USER,
 )
 
 from utils.helperfunctions import register_mlflow
 from training_pipeline import TrainingPipeline
+
 
 @dataclass
 class PerformanceEvaluation:
