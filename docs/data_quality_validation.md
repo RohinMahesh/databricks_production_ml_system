@@ -1,7 +1,7 @@
 # Data Quality Monitoring
 ## Motivation
 
-![Screenshot](docs/data_engineering_lifecycle.png)
+![Screenshot](images/data_engineering_lifecycle.png)
 
 The backbone to successful ML Systems and Data Science products are the foundational data pipelines that takes data from the source and creates a valuable representation to be served to various downstream consumers. These pipelines ensure that the data served to downstream consumers are reliable, available and of high quality. 
 
@@ -12,7 +12,7 @@ Given your data assets and the expectations, which are the expected representati
 - Reporting: data documentation and data quality reports
 - Alerting: logging and alerting based on expectation validation
 
-![Screenshot](docs/evidently_monitoring.png)
+![Screenshot](images/evidently_monitoring.png)
 When monitoring production ML systems, it is imperative we monitor:
 - Data health: monitoring of our upstream data assets (ex: schema changes, broken pipelines, etc.)
 - Model health: monitoring of different ML components (ex: concept/covariate drift etc.)
