@@ -1,20 +1,20 @@
 from dataclasses import dataclass
-
-from databricks import feature_store
-from databricks.feature_store.entities.feature_lookup import FeatureLookup
 from datetime import datetime, timedelta
+
 import mlflow
 import mlflow.sklearn
-from mlflow.tracking import MlflowClient
-from mlflow.models.signature import infer_signature
-import pyspark.sql.functions as func
 import pandas as pd
+import pyspark.sql.functions as func
+from databricks import feature_store
+from databricks.feature_store.entities.feature_lookup import FeatureLookup
+from mlflow.models.signature import infer_signature
+from mlflow.tracking import MlflowClient
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from training_pipeline import TrainingPipeline
 from utils.constants import (
     CUTOFF_EVAL,
     PERFORMANCE_EVAL_COLS,
@@ -22,9 +22,7 @@ from utils.constants import (
     PREDICTIONS_PATH,
     THRESHOLD_RETRAIN,
 )
-
 from utils.helperfunctions import register_mlflow
-from training_pipeline import TrainingPipeline
 
 
 @dataclass

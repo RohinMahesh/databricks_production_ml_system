@@ -1,25 +1,23 @@
+import json
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Dict, List
 
+import mlflow
+import mlflow.sklearn
+import pandas as pd
+import pyspark.sql.functions as func
 from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
-from datetime import datetime, timedelta
-from evidently.pipeline.column_mapping import ColumnMapping
 from evidently.metrics import DataDriftTable, DatasetDriftMetric
 from evidently.model_profile import Profile
 from evidently.model_profile.sections import DataDriftProfileSection
 from evidently.options import DataDriftOptions
+from evidently.pipeline.column_mapping import ColumnMapping
 from evidently.report import Report
-import json
-import mlflow
-import mlflow.sklearn
-from mlflow.tracking import MlflowClient
 from mlflow.models.signature import infer_signature
-import pandas as pd
-
-import pyspark.sql.functions as func
+from mlflow.tracking import MlflowClient
 from pyspark.sql import DataFrame as SparkDataFrame
-
 from utils.constants import (
     CATEGORICAL_COLS,
     CONTAINER,
@@ -30,9 +28,9 @@ from utils.constants import (
     MODEL_NAME,
     MOUNT_NAME,
     NUMERICAL_COLS,
-    ONLINE_TABLE_SCHEMA,
-    ONLINE_TABLE,
     ONLINE_STORE,
+    ONLINE_TABLE,
+    ONLINE_TABLE_SCHEMA,
     RUN_NAME,
     STORAGE,
     STORAGE_ACC_KEY,

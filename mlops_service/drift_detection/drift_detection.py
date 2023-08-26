@@ -1,15 +1,15 @@
+import json
+from datetime import datetime, timedelta
+
+import pandas as pd
 from databricks import feature_store
 from databricks.feature_store.entities.feature_lookup import FeatureLookup
-from datetime import datetime, timedelta
-from evidently.pipeline.column_mapping import ColumnMapping
 from evidently.metrics import DataDriftTable, DatasetDriftMetric
 from evidently.model_profile import Profile
 from evidently.model_profile.sections import DataDriftProfileSection
 from evidently.options import DataDriftOptions
+from evidently.pipeline.column_mapping import ColumnMapping
 from evidently.report import Report
-import json
-import pandas as pd
-
 from utils.constants import (
     BEGINNING,
     CATEGORICAL_COLS,

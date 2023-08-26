@@ -1,5 +1,6 @@
-from databricks.feature_store.online_store_spec import AzureSqlServerSpec
 from datetime import datetime, timedelta
+
+from databricks.feature_store.online_store_spec import AzureSqlServerSpec
 
 STORAGE = ""
 CONTAINER = ""

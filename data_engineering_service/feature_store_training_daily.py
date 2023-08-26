@@ -1,23 +1,23 @@
-from databricks import feature_store
-from datetime import datetime, timedelta
-from pyspark.sql.functions import func
-from pyspark.sql.window import Window
-from pathlib import Path
 import os
 import random
+from datetime import datetime, timedelta
+from pathlib import Path
 
+from databricks import feature_store
+from pyspark.sql.functions import func
+from pyspark.sql.window import Window
 from utils.constants import (
     CUTOFF,
     DATE_COL,
     DELIMITER,
     FILEPATH,
+    OFFINE_TABLE_TRAINING_DESCRIPTION,
     OFFLINE_TABLE_DESCRIPTION_TRAINING,
     OFFLINE_TABLE_KEYS,
     OFFLINE_TABLE_PARTITION,
     OFFLINE_TABLE_SCHEMA,
     OFFLINE_TABLE_TRAINING,
     OFFLINE_TABLE_TRAINING_COLS,
-    OFFINE_TABLE_TRAINING_DESCRIPTION,
 )
 from utils.helperfunctions import update_table
 

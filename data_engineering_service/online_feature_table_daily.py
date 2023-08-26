@@ -1,17 +1,17 @@
+import os
+
 from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
-import os
 from pyspark.sql.functions import func
-from pyspark.sql.types import IntegerType, DoubleType, StringType
-
+from pyspark.sql.types import DoubleType, IntegerType, StringType
 from utils.constants import (
     ONLINE_STORE,
-    ONLINE_TABLE_DESCRIPTION,
     ONLINE_TABLE,
+    ONLINE_TABLE_DESCRIPTION,
     ONLINE_TABLE_KEYS,
     ONLINE_TABLE_PARTITION,
-    ONLINE_TABLE_SCHEMA,
     ONLINE_TABLE_QUERY,
+    ONLINE_TABLE_SCHEMA,
 )
 from utils.helperfunctions import publish_table, update_table
 
