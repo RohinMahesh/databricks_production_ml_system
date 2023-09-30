@@ -1,5 +1,7 @@
 # Drift Monitoring
 
+![Screenshot](images/evidently_monitoring.png)
+
 ## Motiviation
 
 One of the most common challenges faced by Data Science teams building production ML systems is addressing data drift. This is because ML systems fail silently and can go undetected until something goes terribly wrong in production. Data drift can be further broken down into the following categories (Huyen, 2022):
