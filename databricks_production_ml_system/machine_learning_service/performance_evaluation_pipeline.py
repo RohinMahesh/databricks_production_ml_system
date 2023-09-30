@@ -12,6 +12,7 @@ from databricks_production_ml_system.utils.constants import (
     PREDICTIONS_PATH,
     THRESHOLD_RETRAIN,
 )
+from databricks_production_ml_system.utils.file_paths import PREDICTIONS_PATH
 from sklearn.metrics import accuracy_score
 
 

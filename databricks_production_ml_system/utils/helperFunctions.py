@@ -9,21 +9,11 @@ import pandas as pd
 import pyspark.sql.functions as func
 from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
-from evidently.metrics import DataDriftTable, DatasetDriftMetric
-from evidently.model_profile import Profile
-from evidently.model_profile.sections import DataDriftProfileSection
-from evidently.options import DataDriftOptions
-from evidently.pipeline.column_mapping import ColumnMapping
-from evidently.report import Report
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from pyspark.sql import DataFrame as SparkDataFrame
-from utils.constants import (
+from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLS,
     CONTAINER,
     D_TIME,
     EXPERIMENT_NAME,
-    HTML_DIRECTORY,
     HYPERPARAMS,
     MODEL_NAME,
     MOUNT_NAME,
@@ -37,6 +27,16 @@ from utils.constants import (
     TARGET,
     USER,
 )
+from databricks_production_ml_system.utils.file_paths import HTML_DIRECTORY
+from evidently.metrics import DataDriftTable, DatasetDriftMetric
+from evidently.model_profile import Profile
+from evidently.model_profile.sections import DataDriftProfileSection
+from evidently.options import DataDriftOptions
+from evidently.pipeline.column_mapping import ColumnMapping
+from evidently.report import Report
+from mlflow.models.signature import infer_signature
+from mlflow.tracking import MlflowClient
+from pyspark.sql import DataFrame as SparkDataFrame
 
 
 def register_mlflow(
