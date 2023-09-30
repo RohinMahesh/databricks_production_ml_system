@@ -1,6 +1,6 @@
 # Databricks Production ML System
 
-![Screenshot](docs/images/architecture_diagram.jpg)
+![Screenshot](databricks_production_ml_system/docs/images/architecture_diagram.jpg)
 
 ## Background
 This repository contains an end-to-end production machine learning system using Azure Databricks. In this system, we are implementing a single deployment strategy for a batch deployment. All relevant downstream data assets, ML artifacts and services are scheduled at a regular cadence.
