@@ -1,25 +1,19 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 
-import mlflow
-import mlflow.sklearn
 import pandas as pd
 import pyspark.sql.functions as func
 from databricks import feature_store
-from databricks.feature_store.entities.feature_lookup import FeatureLookup
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from utils.constants import (
+from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLUMNS,
     HYPERPARAMS,
     MODEL_TRAINING_QUERY,
     TARGET_COL,
 )
-from utils.helperfunctions import register_mlflow
+from databricks_production_ml_system.utils.helperfunctions import register_mlflow
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 
 @dataclass
@@ -31,15 +25,13 @@ class TrainingPipeline:
     def query_and_aggregate(self):
         """
         Queries and aggregates upstream data for training
-
-        :returns data, feature_space: feature space and target variable
         """
         # Query data from offline feature table
         fs = feature_store.FeatureStoreClient()
         data = spark.sql(MODEL_TRAINING_QUERY)
 
         # Engineer features
-        feature_space = (
+        self.feature_space = (
             data.groupby("CustomerNumber")
             .agg(
                 func.min("Feature1").alias("Feature1"),
@@ -52,16 +44,15 @@ class TrainingPipeline:
         )
 
         # Split data
-        target = feature_space[TARGET_COL]
-        del feature_space[TARGET_COL]
-        return data, feature_space
+        self.target = self.feature_space[TARGET_COL]
+        del self.feature_space[TARGET_COL]
 
     def train_and_register_model(self):
         """
         Trains ML model and serializes pipeline in MLflow
         """
         # Get feature space and target variable
-        feature_space, target = self.query_and_aggregate()
+        self.query_and_aggregate()
 
         # Define feature extractor
         categorical_transformer = Pipeline(
@@ -81,10 +72,10 @@ class TrainingPipeline:
                 ("model", LogisticRegression(**HYPERPARAMS)),
             ]
         )
-        clf.fit(feature_space, target)
+        clf.fit(self.feature_space, self.target)
 
         # Register model artifact in MLflow
         register_mlflow(
-            data=feature_space,
+            data=self.feature_space,
             model=clf,
         )

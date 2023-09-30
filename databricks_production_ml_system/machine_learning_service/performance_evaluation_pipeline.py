@@ -1,28 +1,18 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 
-import mlflow
-import mlflow.sklearn
 import pandas as pd
-import pyspark.sql.functions as func
 from databricks import feature_store
-from databricks.feature_store.entities.feature_lookup import FeatureLookup
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from training_pipeline import TrainingPipeline
-from utils.constants import (
+from databricks_production_ml_system.machine_learning_service.training_pipeline import (
+    TrainingPipeline,
+)
+from databricks_production_ml_system.utils.constants import (
     CUTOFF_EVAL,
     PERFORMANCE_EVAL_COLS,
     PERFORMANCE_EVAL_QUERY,
     PREDICTIONS_PATH,
     THRESHOLD_RETRAIN,
 )
-from utils.helperfunctions import register_mlflow
+from sklearn.metrics import accuracy_score
 
 
 @dataclass
@@ -34,8 +24,6 @@ class PerformanceEvaluation:
     def evaluate(self):
         """
         Evaluates model performance
-
-        :returns None
         """
         # Get and filter predictions
         predictions = spark.read.options(header=True).csv(PREDICTIONS_PATH)

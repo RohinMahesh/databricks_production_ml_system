@@ -17,6 +17,8 @@ MLFLOW_PROD_ENV = "Production"
 HTML_DIRECTORY = "dbfs:/FileStore/tmp/index.html"
 PREDICTIONS_PATH = "/example_classifier_predictions/*.csv"
 TARGET = "Target"
+EXPECTATION_SUITE_NAME = "example_expectations"
+CHECKPOINT_NAME = "example_checkpoint_name"
 NUMERICAL_COLS = ["Feature1", "Feature2", "Feature3"]
 CATEGORICAL_COLS = ["Feature4"]
 COLS_FOR_REMOVAL = ["CustomerState"]
@@ -81,6 +83,7 @@ HYPERPARAMS = {
     "n_jobs": None,
     "l1_ratio": None,
 }
+
 OFFLINE_TABLE_DESCRIPTION_SERVING = "Model Serving Feature Table"
 OFFLINE_TABLE_DESCRIPTION_TRAINING = "ARDS Feature Table"
 OFFINE_TABLE_SERVING_DESCRIPTION = "Model Serving Feature Table"
@@ -102,3 +105,18 @@ ONLINE_STORE = AzureSqlServerSpec(
     read_secret_prefix=READ_SECRET_PREFIX,
     write_secret_prefix=WRITE_SECRET_PREFIX,
 )
+
+DATA_SOURCE_CONFIG = {
+    "name": "example",
+    "class_name": "Datasource",
+    "execution_engine": {"class_name": "SparkDFExecutionEngine"},
+    "data_connectors": {
+        "example_connector": {
+            "module_name": "great_expectations.datasource.data_connector",
+            "class_name": "RuntimeDataConnector",
+            "batch_identifiers": [
+                "run_id",
+            ],
+        }
+    },
+}

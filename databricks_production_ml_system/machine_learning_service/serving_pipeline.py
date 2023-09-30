@@ -1,25 +1,19 @@
 from dataclasses import dataclass
 from datetime import date
 
-import mlflow
-import mlflow.sklearn
 import pandas as pd
 from databricks import feature_store
-from databricks.feature_store.entities.feature_lookup import FeatureLookup
-from helperFunctions import load_mlflow
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from utils.constants import (
+from databricks_production_ml_system.utils.constants import (
     COLS_FOR_REMOVAL,
     MODEL_NAME,
     MODEL_SERVING_QUERY,
     PREDICTION_COLS,
 )
-from utils.helperfunctions import load_mlflow
+from databricks_production_ml_system.utils.helperFunctions import load_mlflow
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 
 @dataclass
@@ -38,8 +32,6 @@ class ServingPipeline:
     def serve_predictions(self):
         """
         Loads model artifact from MLflow serves predictions
-
-        :returns None
         """
         # Get data for prediction
         data = self.query_and_aggregate()
