@@ -45,11 +45,11 @@ def generate_random_data(sample_size: str, incremental: True):
         ).tolist(),
         "feature1": np.random.uniform(low=0, high=75, size=sample_size).tolist(),
         "feature2": np.random.uniform(low=0, high=30, size=sample_size).tolist(),
-        "feature3": np.random.normal(low=3, high=5, size=sample_size).tolist(),
+        "feature3": np.random.normal(loc=3, scale==5, size=sample_size).tolist(),
         "feature4": np.random.choice(
             a=["Low", "Medium", "High", "Unknown"],
             size=sample_size,
-            p=[0.33, 0.33, 0.33, 0.33, 0.01],
+            p=[0.33, 0.33, 0.33, 0.01],
         ).tolist(),
         DATE_COL: [datetime.now().strftime("%Y-%m-%d")] * sample_size,
         TARGET_COL: np.random.choice(a=[0, 1], size=sample_size, p=[0.4, 0.6]).tolist(),
