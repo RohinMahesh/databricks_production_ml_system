@@ -4,13 +4,6 @@ from datetime import datetime, timedelta
 import pandas as pd
 import pyspark.sql.functions as func
 from databricks import feature_store
-from great_expectations.core.batch import RuntimeBatchRequest
-from great_expectations.data_context import BaseDataContext
-from great_expectations.data_context.types.base import (
-    DataContextConfig,
-    FilesystemStoreBackendDefaults,
-)
-from ruamel import yaml
 from databricks_production_ml_system.utils.constants import (
     CHECKPOINT_NAME,
     DATA_SOURCE_CONFIG,
@@ -18,6 +11,13 @@ from databricks_production_ml_system.utils.constants import (
     NUMERICAL_COLS,
 )
 from databricks_production_ml_system.utils.file_paths import GE_ROOT_DIRECTORY
+from great_expectations.core.batch import RuntimeBatchRequest
+from great_expectations.data_context import BaseDataContext
+from great_expectations.data_context.types.base import (
+    DataContextConfig,
+    FilesystemStoreBackendDefaults,
+)
+from ruamel import yaml
 
 
 def run_validation():
@@ -66,15 +66,15 @@ def run_validation():
     )
 
     validator.expect_column_values_to_be_in_set(
-        column="Feature4", value_set=NUMERICAL_COLS
+        column="feature4", value_set=NUMERICAL_COLS
     )
 
-    validator.expect_column_values_to_not_be_null(column="CustomerNumber")
-    validator.expect_column_values_to_not_be_null(column="Feature1")
-    validator.expect_column_values_to_not_be_null(column="Feature2")
-    validator.expect_column_values_to_not_be_null(column="Feature3")
-    validator.expect_column_values_to_not_be_null(column="Feature4")
-    validator.expect_column_values_to_not_be_null(column="Target")
+    validator.expect_column_values_to_not_be_null(column="customer_number")
+    validator.expect_column_values_to_not_be_null(column="feature1")
+    validator.expect_column_values_to_not_be_null(column="feature2")
+    validator.expect_column_values_to_not_be_null(column="feature3")
+    validator.expect_column_values_to_not_be_null(column="feature4")
+    validator.expect_column_values_to_not_be_null(column="target")
 
     validator.save_expectation_suite(discard_failed_expectations=False)
 

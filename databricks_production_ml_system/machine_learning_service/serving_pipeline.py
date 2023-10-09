@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 
 import pandas as pd
 from databricks import feature_store
@@ -8,7 +8,10 @@ from databricks_production_ml_system.utils.constants import (
     MODEL_NAME,
     MODEL_SERVING_QUERY,
     PREDICTION_COLS,
+    PREDICTION_DATE,
+    TODAY,
 )
+from databricks_production_ml_system.utils.file_paths import PREDICTION_PATH
 from databricks_production_ml_system.utils.helperFunctions import load_mlflow
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
@@ -40,18 +43,14 @@ class ServingPipeline:
         clf = load_mlflow(model_name=MODEL_NAME, stage="Production")
 
         # Serve predictions
-        todays_date = date.today()
-
-        # Make predictions
-        todays_date = date.today()
+        todays_date = TODAY.strftime("%Y-%m-%d")
         del data[COLS_FOR_REMOVAL]
         preds = clf.predict(data)
-        data["Prediction"] = preds
+        data["prediction"] = preds
 
         # Watermark predictions
-        data["Prediction_Date"] = [todays_date] * len(preds)
+        data[PREDICTION_DATE] = [todays_date] * len(preds)
 
         # Store predictions in Blob
-        path = f"/example_classifier_predictions/{todays_date}.csv"
         data = data[PREDICTION_COLS]
-        data.to_csv(path)
+        data.write.mode("append").parquet(PREDICTION_PATH)

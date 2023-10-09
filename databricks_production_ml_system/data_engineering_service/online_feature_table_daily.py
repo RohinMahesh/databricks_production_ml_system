@@ -14,17 +14,16 @@ def feature_store_online_serving_update():
     """
     Executes daily update of the online feature table for serving
     """
-    # Query Data
+    # Query data
     data = spark.sql(ONLINE_TABLE_QUERY)
-    online_features = data.groupby("CustomerNumber").agg(
-        func.min("Feature1").alias("Feature1"),
-        func.max("Feature2").alias("Feature2"),
-        func.sum("Feature3").alias("Feature3"),
-        func.last("Feature4").alias("Feature4"),
-        func.last("CustomerState").alias("CustomerState"),
+    online_features = data.groupby("customer_number").agg(
+        func.min("feature1").alias("feature1"),
+        func.max("feature2").alias("feature2"),
+        func.sum("feature3").alias("feature3"),
+        func.last("feature4").alias("feature4"),
     )
 
-    # Update Feature Table
+    # Update feature table
     update_table(
         data=online_features,
         description=ONLINE_TABLE_DESCRIPTION,

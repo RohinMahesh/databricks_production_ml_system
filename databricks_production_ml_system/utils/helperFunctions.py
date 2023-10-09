@@ -12,7 +12,7 @@ from databricks.feature_store.online_store_spec import AzureSqlServerSpec
 from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLS,
     CONTAINER,
-    D_TIME,
+    DATE_COL,
     EXPERIMENT_NAME,
     HYPERPARAMS,
     MODEL_NAME,
@@ -203,7 +203,7 @@ def calculate_drift(
     thresh: float = 0.15,
     prediction: str = None,
     Id: str = None,
-    d_time: str = D_TIME,
+    d_time: str = DATE_COL,
 ):
     """
     Calculates drift
@@ -225,7 +225,7 @@ def calculate_drift(
     :param Id: optional unique identifier,
         defaults to None
     :param d_time: optional datetime column,
-        defaults to D_TIME
+        defaults to DATE_COL
     :returns drift_profile: dictionary containing results of statistical tests
     """
     # Configure mapping
@@ -286,7 +286,7 @@ def create_drift_report(
     thresh: float = 0.15,
     prediction: str = None,
     Id: str = None,
-    d_time: str = D_TIME,
+    d_time: str = DATE_COL,
 ):
     """
     Create drift report
@@ -308,7 +308,7 @@ def create_drift_report(
     :param Id: optional unique identifier,
         defaults to None
     :param d_time: optional datetime column,
-        defaults to D_TIME
+        defaults to DATE_COL
     :returns drift_report: dictionary containing drift report
     """
     drift_profile = calculate_drift(
@@ -356,17 +356,10 @@ def create_drift_report(
 def get_drift_data(beginning, mid):
     """Generates reference and comparison data using 14 day window
 
-    Args:
-        beginning (String):
-            Filtering condition for extracting data
-        mid (String):
-            Filtering condition for extracting data
-
-    Returns:
-        comparison_data (Pandas DataFrame):
-            Data used for comparison
-        reference_data (Pandas DataFrame):
-            Data used for reference
+    :param beginning: beginning time window to filter/extract data
+    :param mid: middle time window to filter/extract data
+    :returns comparison_data: data used for comparison
+    :returns reference_data: data used for reference
     """
 
     # Get data for comparison

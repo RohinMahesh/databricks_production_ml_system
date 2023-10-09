@@ -1,5 +1,4 @@
 from databricks_production_ml_system.utils.constants import (
-    DELIMITER,
     FILEPATH,
     OFFLINE_TABLE_DESCRIPTION_SERVING,
     OFFLINE_TABLE_KEYS,
@@ -18,7 +17,7 @@ def feature_store_offline_serving_update():
     Executes daily update of the offline feature table for serving
     """
     # Get latest CSV file
-    data = spark.read.options(delimiter=DELIMITER, header=True).csv(FILEPATH)
+    data = spark.read.format("parquet").load(FILEPATH)
 
     # Update feature table
     update_table(

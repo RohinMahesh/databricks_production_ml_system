@@ -1,9 +1,9 @@
 import pandas as pd
+from databricks_production_ml_system.utils.constants import BEGINNING, MID
 from databricks_production_ml_system.utils.helperfunctions import (
     create_drift_report,
     get_drift_data,
 )
-from databricks_production_ml_system.utils.constants import BEGINNING, MID
 
 
 def drift_detection():

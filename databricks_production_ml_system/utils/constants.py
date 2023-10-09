@@ -11,33 +11,30 @@ RUN_NAME = ""
 MODEL_NAME = ""
 USER = ""
 FILEPATH = ""
-DATE_COL = "Date"
-DELIMITER = "\u0001"
+DATE_COL = "date"
 MLFLOW_PROD_ENV = "Production"
-TARGET = "Target"
+TARGET_COL = "target"
+PREDICTION_DATE = "prediction_date"
 EXPECTATION_SUITE_NAME = "example_expectations"
 CHECKPOINT_NAME = "example_checkpoint_name"
-NUMERICAL_COLS = ["Feature1", "Feature2", "Feature3"]
-CATEGORICAL_COLS = ["Feature4"]
-COLS_FOR_REMOVAL = ["CustomerState"]
-PREDICTION_COLS = ["ID", "Prediction", "Prediction_Date"]
-PERFORMANCE_EVAL_COLS = ["ID", "Target"]
-OFFLINE_TABLE_KEYS = ["ID", "Date", "CustomerNumber"]
-OFFLINE_TABLE_PARTITION = ["CustomerState"]
+NUMERICAL_COLS = ["feature1", "feature2", "feature3"]
+CATEGORICAL_COLS = ["feature4"]
+COLS_FOR_REMOVAL = ["customer_number"]
+PREDICTION_COLS = ["prediction", PREDICTION_DATE]
+PERFORMANCE_EVAL_COLS = ["date", "target"]
+OFFLINE_TABLE_KEYS = ["date", "customer_number"]
+OFFLINE_TABLE_PARTITION = ["date"]
 OFFLINE_TABLE_TRAINING_COLS = [
-    "ID",
-    "Date",
-    "CustomerNumber",
-    "CustomerState",
-    "Feature1",
-    "Feature2",
-    "Feature3",
-    "Feature4",
-    "Target",
+    "customer_number",
+    "feature1",
+    "feature2",
+    "feature3",
+    "feature4",
+    "date",
+    "target",
 ]
-ONLINE_TABLE_KEYS = ["CustomerNumber"]
-ONLINE_TABLE_PARTITION = ["CustomerState"]
-D_TIME = "Date"
+ONLINE_TABLE_KEYS = ["customer_number"]
+ONLINE_TABLE_PARTITION = ["date"]
 SCHEMA_TRAINING = "offline"
 TABLE_TRAINING = "training"
 SCHEMA_SERVING = "online"

@@ -1,7 +1,6 @@
 from databricks_production_ml_system.utils.constants import (
     CUTOFF,
     DATE_COL,
-    DELIMITER,
     FILEPATH,
     OFFINE_TABLE_TRAINING_DESCRIPTION,
     OFFLINE_TABLE_DESCRIPTION_TRAINING,
@@ -20,10 +19,10 @@ def feature_store_offline_training_update():
     """
     Executes daily update of the offline feature store for training
     """
-    # Load in table
+    # Load table
     data = (
-        spark.read.options(delimiter=DELIMITER, header=True)
-        .csv(FILEPATH)
+        spark.read.format("parquet")
+        .load(FILEPATH)
         .withColumn(
             "row_number",
             func.row_number().over(
@@ -41,11 +40,6 @@ def feature_store_offline_training_update():
     if len(data.head(1)) > 0:
         # Select columns for downstream consumption
         data = data.select(OFFLINE_TABLE_TRAINING_COLS)
-        # Impute odd level of Feature4
-        data = data.withColumn(
-            "Feature4",
-            func.when(data.Feature4 == "Unknown", "Status1").otherwise(data.Feature4),
-        )
 
         # Update feature table
         update_table(

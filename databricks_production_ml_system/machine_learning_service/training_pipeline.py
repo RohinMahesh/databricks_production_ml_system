@@ -32,12 +32,12 @@ class TrainingPipeline:
 
         # Engineer features
         self.feature_space = (
-            data.groupby("CustomerNumber")
+            data.groupby("customer_number")
             .agg(
-                func.min("Feature1").alias("Feature1"),
-                func.max("Feature2").alias("Feature2"),
-                func.sum("Feature3").alias("Feature3"),
-                func.last("Feature4").alias("Feature4"),
+                func.min("feature1").alias("feature1"),
+                func.max("feature2").alias("feature2"),
+                func.sum("feature3").alias("feature3"),
+                func.last("feature4").alias("feature4"),
                 func.last(TARGET_COL).alias(TARGET_COL),
             )
             .toPandas()
