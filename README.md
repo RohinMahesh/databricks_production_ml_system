@@ -20,7 +20,7 @@ This ML System leverages the following technologies:
 
 ## Data Engineering Service
 
-The Data Engineering Service consists of 3 scheduled pipelines that performs ETL from the upstream data assets into downstream feature tables. In this system, the source-aligned data assets are in a CSV format and the downstream data assets resulting from these pipelines are stored in a Delta format and in an Azure SQL Server table. 
+The Data Engineering Service consists of 3 scheduled pipelines that performs ETL from the upstream data assets into downstream feature tables. In this system, the source-aligned data assets are in a Parquet format and the downstream data assets resulting from these pipelines are stored in a Delta format and in an Azure SQL Server table. 
 
 Details for the Data Engineering Services and its components can be found in the "data_engineering_service" folder: 
 1. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS). This is updated using the following script and is scheduled to run on a daily cadence:
@@ -35,14 +35,8 @@ The Machine Learning Service consists of 3 scheduled pipelines that leverages th
 
 Details for the Machine Learning Services and its components can be found in the "machine_learning_service" folder: 
 1. Model Training Pipeline: trains ML pipeline, which packs both the feature extractor and ML model into a serialized scikit-learn Pipeline object. This is scheduled to run on a monthly cadence.
-    - helperfunctions.py
-    - training_pipeline.py
 2. Model Serving Pipeline: services ML pipeline for predictions. This is scheduled to run on a daily cadence.
-    - helperfunctions.py
-    - serving_pipeline.py
 3. Model Performance Evaluation Pipeline: evaluates ML pipeline on last 31 days worth of data (accounting for a 1-day label delay) and triggers model retraining based on acceptable performance of ML pipeline.
-    - helperfunctions.py
-    - performance_evaluation_pipeline.py
 
 ## MLOps Service
 
@@ -50,9 +44,8 @@ The MLOps Service consists of 2 scheduled pipelines that leverages the outputs o
 
 Details for the MLOps Services and its components can be found in the "mlops_service" folder: 
 1. Data Quality Validation Pipeline: upstream data quality validation framework for relevant data assets. This is scheduled to run on a daily cadence.
-    - validation.py
-2. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS. This is scheduled to run on a monthly cadence.
-    - helperFunctions.py
+    - data_quality_validation.py
+2. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS and trigger model retraining. This is scheduled to run on a monthly cadence.
     - drift_detection.py
 
 ## Orchestration
