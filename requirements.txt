@@ -1,4 +1,4 @@
-evidently==0.1.59.dev3
+evidently==0.3.0
 great-expectations==0.15.32
 mlflow==1.12.1
 pandas==1.5.1

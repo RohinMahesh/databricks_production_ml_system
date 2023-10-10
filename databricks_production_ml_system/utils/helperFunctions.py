@@ -1,3 +1,4 @@
+import ast
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -11,29 +12,21 @@ from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
 from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLS,
-    CONTAINER,
     DATE_COL,
     EXPERIMENT_NAME,
     HYPERPARAMS,
     MODEL_NAME,
-    MOUNT_NAME,
     NUMERICAL_COLS,
     ONLINE_STORE,
     ONLINE_TABLE,
     ONLINE_TABLE_SCHEMA,
     RUN_NAME,
-    STORAGE,
-    STORAGE_ACC_KEY,
     TARGET,
     USER,
 )
 from databricks_production_ml_system.utils.file_paths import HTML_DIRECTORY
-from evidently.metrics import DataDriftTable, DatasetDriftMetric
-from evidently.model_profile import Profile
-from evidently.model_profile.sections import DataDriftProfileSection
-from evidently.options import DataDriftOptions
-from evidently.pipeline.column_mapping import ColumnMapping
-from evidently.report import Report
+from evidently.test_preset import DataDriftTestPreset
+from evidently.test_suite import TestSuite
 from mlflow.models.signature import infer_signature
 from mlflow.tracking import MlflowClient
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -193,168 +186,80 @@ def update_table(
         publish_table()
 
 
-def calculate_drift(
-    reference: pd.DataFrame,
-    comparison: pd.DataFrame,
-    target: str = TARGET,
-    numerical_f: List[str] = NUMERICAL_COLS,
-    categorical_f: List[str] = CATEGORICAL_COLS,
-    statTest: str = "psi",
-    thresh: float = 0.15,
-    prediction: str = None,
-    Id: str = None,
-    d_time: str = DATE_COL,
-):
-    """
-    Calculates drift
-
-    :param reference: reference data for drift evaluation
-    :param comparison: comparison data for drift evaluation
-    :param target: optional target variable,
-        defaults to TARGET
-    :param numerical_f: optional list of numerical covariates,
-        defaults to NUMERICAL_COLS
-    :param categorical_f: list of categorical covariates,
-        defaults to CATEGORICAL_COLS
-    :param statTest: optional statistical test,
-        defaults to "psi"
-    :param thresh: optional threshold for the statistical test,
-        defaults to 0.15
-    :param prediction: optional column with ML model predictions,
-        defaults to None
-    :param Id: optional unique identifier,
-        defaults to None
-    :param d_time: optional datetime column,
-        defaults to DATE_COL
-    :returns drift_profile: dictionary containing results of statistical tests
-    """
-    # Configure mapping
-    columnMapping = ColumnMapping()
-    columnMapping.task = "classification"
-    columnMapping.target = target
-    columnMapping.prediction = prediction
-    columnMapping.id = Id
-    columnMapping.datetime = d_time
-    columnMapping.numerical_features = numerical_f
-    columnMapping.categorical_features = categorical_f
-
-    # Create drift metric and threshold
-    opt = DataDriftOptions(threshold=thresh, feature_stattest_func=statTest)
-    drift_profile = Profile(sections=[DataDriftProfileSection()], options=[opt])
-
-    # Calculate drift report
-    drift_profile.calculate(reference, comparison, column_mapping=columnMapping)
-
-    # Write index.html file to Blob container for static webpage
-    drift_report_html = Report(
-        metrics=[
-            DatasetDriftMetric(threshold=0.15, options=opt),
-            DataDriftTable(options=opt),
-        ]
-    )
-    drift_report_html.run(
-        reference_data=reference, current_data=comparison, column_mapping=columnMapping
-    )
-
-    # Store locally to tmp directory in DBFS
-    drift_report_html.save_html(HTML_DIRECTORY)
-
-    # Mount blob container and then move file into container
-    dbutils.fs.mount(
-        source=f"wasbs://{CONTAINER}@{STORAGE}.blob.core.windows.net",
-        mount_point=f"/mnt/{MOUNT_NAME}",
-        extra_configs={
-            f"fs.azure.account.key.{STORAGE}.blob.core.windows.net": f"{STORAGE_ACC_KEY}"
-        },
-    )
-    dbutils.fs.cp(
-        "dbfs:/FileStore/tmp/index.html",
-        f"dbfs:/mnt/{MOUNT_NAME}/index.html",
-    )
-    # Unmount container
-    dbutils.fs.unmount(f"/mnt/{MOUNT_NAME}")
-    return drift_profile
-
-
 def create_drift_report(
     reference: pd.DataFrame,
     comparison: pd.DataFrame,
-    target: str = TARGET,
     numerical_f: List[str] = NUMERICAL_COLS,
     categorical_f: List[str] = CATEGORICAL_COLS,
-    statTest: str = "psi",
-    thresh: float = 0.15,
-    prediction: str = None,
-    Id: str = None,
-    d_time: str = DATE_COL,
+    num_stattest: str = "ks",
+    cat_stattest: str = "psi",
+    num_stattest_threshold: float = 0.15,
+    cat_stattest_threshold: float = 0.15,
 ):
     """
     Create drift report
 
     :param reference: reference data for drift evaluation
     :param comparison: comparison data for drift evaluation
-    :param target: optional target variable,
-        defaults to TARGET
     :param numerical_f: optional list of numerical covariates,
         defaults to NUMERICAL_COLS
     :param categorical_f: list of categorical covariates,
         defaults to CATEGORICAL_COLS
-    :param statTest: optional statistical test,
-        defaults to "psi"
-    :param thresh: optional threshold for the statistical test,
+    :param num_stattest: optional statistical test for numerical covariates,
+        defaults to 'ks'
+    :param cat_stattest: optional statistical test for categorical covariates,
+        defaults to 'psi'
+    :param num_stattest_threshold: optional threshold for numerical tests,
         defaults to 0.15
-    :param prediction: optional column with ML model predictions,
-        defaults to None
-    :param Id: optional unique identifier,
-        defaults to None
-    :param d_time: optional datetime column,
-        defaults to DATE_COL
+    :param cat_stattest_threshold: optional threshold for categorical tests,
+        defaults to 0.15
     :returns drift_report: dictionary containing drift report
     """
-    drift_profile = calculate_drift(
-        reference,
-        comparison,
-    )
-    # Convert to JSON
-    drift_profile = drift_profile.json()
+    # Define dictionary of statistical test per covariate
+    per_column_stattest = {
+        **{feature: num_stattest for feature in numerical_f},
+        **{feature: cat_stattest for feature in categorical_f},
+    }
 
-    # Remove single quotes
-    drift_profile = drift_profile.replace("'", "")
-    drift_profile = json.loads(drift_profile)
+    # Define dictionary of thresholds per covariate
+    per_column_stattest_threshold = {
+        **{feature: num_stattest_threshold for feature in numerical_f},
+        **{feature: cat_stattest_threshold for feature in categorical_f},
+    }
 
-    # Select covariates for extraction
-    covariates = list(comparison.columns)
-    for_selection = numerical_f
-    for_selection.extend(categorical_f)
-    for_selection.append(target)
-    covariates = [x for x in covariates for x in for_selection]
-    drift_report = {x: list() for x in covariates}
-    any_drift = False
-
-    # Extract covariates from drift report
-    for feature in list(drift_report.keys()):
-        drift_report[feature] = {
-            "drift_detected": drift_profile["data_drift"]["data"]["metrics"][feature][
-                "drift_detected"
-            ],
-            "stattest_name": drift_profile["data_drift"]["data"]["metrics"][feature][
-                "stattest_name"
-            ],
-            "drift_score": round(
-                drift_profile["data_drift"]["data"]["metrics"][feature]["drift_score"],
-                4,
+    # Define testing suite
+    data_drift = TestSuite(
+        tests=[
+            DataDriftTestPreset(
+                per_column_stattest=per_column_stattest,
+                per_column_stattest_threshold=per_column_stattest_threshold,
             ),
-        }
-        if drift_report[feature]["drift_detected"]:
-            any_drift = True
+        ]
+    )
 
-    # Assign any_drift
-    drift_report["any_drift"] = any_drift
+    # Initialize drift report
+    drift_report = {feature: None for feature in reference.columns}
+
+    # Calculate drift metrics and convert to dictionary
+    data_drift.run(reference_data=comparison, current_data=reference)
+    data_drift = data_drift.as_dict()
+
+    # Populate drift report with status of test
+    for feature in reference.columns:
+        drift_report[feature] = data_drift["tests"][0]["parameters"]["features"][
+            feature
+        ]["detected"]
+
+    # Engineer any_drift for downstream orchestration
+    drift_report["any_drift"] = (
+        False if data_drift["summary"]["all_passed"] == True else True
+    )
     return drift_report
 
 
 def get_drift_data(beginning, mid):
-    """Generates reference and comparison data using 14 day window
+    """
+    Generates reference and comparison data using 14 day window
 
     :param beginning: beginning time window to filter/extract data
     :param mid: middle time window to filter/extract data
@@ -367,7 +272,7 @@ def get_drift_data(beginning, mid):
     cutoff = today - timedelta(days=60)
     cutoff = cutoff.strftime("%Y-%m-%d")
     fs = feature_store.FeatureStoreClient()
-    cutoff = "SELECT * FROM example.training WHERE Date >= {0}".format(cutoff)
+    query = "SELECT * FROM example.training WHERE Date >= {0}".format(cutoff)
     data = spark.sql(query)
 
     # Identify reference and comparison data

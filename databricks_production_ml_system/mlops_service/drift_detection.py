@@ -1,4 +1,7 @@
 import pandas as pd
+from databricks_production_ml_system.machine_learning_service.training_pipeline import (
+    TrainingPipeline,
+)
 from databricks_production_ml_system.utils.constants import BEGINNING, MID
 from databricks_production_ml_system.utils.helperfunctions import (
     create_drift_report,
@@ -8,7 +11,7 @@ from databricks_production_ml_system.utils.helperfunctions import (
 
 def drift_detection():
     """
-    Gets drift report for downstream consumption
+    Creates drift report and evaluates status for model retraining
 
     :returns drift_report: dictionary containing drift status and values
     """
@@ -20,4 +23,9 @@ def drift_detection():
         reference=reference_data,
         comparison=comparison_data,
     )
+
+    # If there is any drift, trigger model retraining
+    if drift_report["any_drift"] == True:
+        TrainingPipeline().train_and_register_model()
+
     return drift_report
