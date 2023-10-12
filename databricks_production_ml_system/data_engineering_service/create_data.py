@@ -54,6 +54,7 @@ def generate_random_data(sample_size: str, incremental: True):
         DATE_COL: [datetime.now().strftime("%Y-%m-%d")] * sample_size,
         TARGET_COL: np.random.choice(a=[0, 1], size=sample_size, p=[0.4, 0.6]).tolist(),
     }
+    data[DATE_COL] = [datetime.strptime("%Y-%m-%d %H:%M:%S") for x in data[DATE_COL]]
     data = [dict(zip(data, t)) for t in zip(*data.values())]
     data = (
         spark.createDataFrame(data, schema)
