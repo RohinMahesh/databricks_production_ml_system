@@ -8,12 +8,12 @@ from databricks_production_ml_system.utils.constants import (
     TARGET_COL,
 )
 from pyspark.sql.types import (
+    DateType,
     DoubleType,
     IntegerType,
     StringType,
     StructField,
     StructType,
-    TimestampType,
 )
 
 
@@ -33,7 +33,7 @@ def generate_random_data(sample_size: str, incremental: True):
             StructField("feature2", DoubleType(), nullable=True),
             StructField("feature3", DoubleType(), nullable=True),
             StructField("feature4", StringType(), nullable=True),
-            StructField(DATE_COL, TimestampType(), nullable=False),
+            StructField(DATE_COL, DateType(), nullable=False),
             StructField(TARGET_COL, IntegerType(), nullable=False),
         ]
     )
@@ -54,7 +54,7 @@ def generate_random_data(sample_size: str, incremental: True):
         DATE_COL: [datetime.now().strftime("%Y-%m-%d")] * sample_size,
         TARGET_COL: np.random.choice(a=[0, 1], size=sample_size, p=[0.4, 0.6]).tolist(),
     }
-    data[DATE_COL] = [datetime.strptime("%Y-%m-%d %H:%M:%S") for x in data[DATE_COL]]
+    data[DATE_COL] = [datetime.strptime(x, "%Y-%m-%d") for x in data[DATE_COL]]
     data = [dict(zip(data, t)) for t in zip(*data.values())]
     data = (
         spark.createDataFrame(data, schema)
