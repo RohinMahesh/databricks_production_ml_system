@@ -10,21 +10,21 @@ EXPERIMENT_NAME = ""
 RUN_NAME = ""
 MODEL_NAME = ""
 USER = ""
+DATA_FORMAT = "parquet"
 DATE_COL = "date"
+CUSTOMER_COL = "customer_number"
 MLFLOW_PROD_ENV = "Production"
 TARGET_COL = "target"
 PREDICTION_DATE = "prediction_date"
-EXPECTATION_SUITE_NAME = "example_expectations"
-CHECKPOINT_NAME = "example_checkpoint_name"
 NUMERICAL_COLS = ["feature1", "feature2", "feature3"]
 CATEGORICAL_COLS = ["feature4"]
-COLS_FOR_REMOVAL = ["customer_number"]
+COLS_FOR_REMOVAL = [CUSTOMER_COL]
 PREDICTION_COLS = ["prediction", PREDICTION_DATE]
 PERFORMANCE_EVAL_COLS = ["date", "target"]
-OFFLINE_TABLE_KEYS = ["date", "customer_number"]
+OFFLINE_TABLE_KEYS = ["date", CUSTOMER_COL]
 OFFLINE_TABLE_PARTITION = ["date"]
 OFFLINE_TABLE_TRAINING_COLS = [
-    "customer_number",
+    CUSTOMER_COL,
     "feature1",
     "feature2",
     "feature3",
@@ -32,7 +32,11 @@ OFFLINE_TABLE_TRAINING_COLS = [
     "date",
     "target",
 ]
-ONLINE_TABLE_KEYS = ["customer_number"]
+DLT_TABLE_NAME = "activity"
+ARDS_TABLE_NAME = f"{DLT_TABLE_NAME}_silver"
+BRONZE_COMMENT = f"Bronze table for {DLT_TABLE_NAME} data"
+SILVER_COMMENT = f"Silver table for {DLT_TABLE_NAME} data"
+ONLINE_TABLE_KEYS = [CUSTOMER_COL]
 ONLINE_TABLE_PARTITION = ["date"]
 SCHEMA_TRAINING = "offline"
 TABLE_TRAINING = "training"
@@ -100,18 +104,3 @@ ONLINE_STORE = AzureSqlServerSpec(
     read_secret_prefix=READ_SECRET_PREFIX,
     write_secret_prefix=WRITE_SECRET_PREFIX,
 )
-
-DATA_SOURCE_CONFIG = {
-    "name": "example",
-    "class_name": "Datasource",
-    "execution_engine": {"class_name": "SparkDFExecutionEngine"},
-    "data_connectors": {
-        "example_connector": {
-            "module_name": "great_expectations.datasource.data_connector",
-            "class_name": "RuntimeDataConnector",
-            "batch_identifiers": [
-                "run_id",
-            ],
-        }
-    },
-}

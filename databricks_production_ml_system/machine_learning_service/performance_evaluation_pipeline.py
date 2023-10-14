@@ -8,6 +8,7 @@ from databricks_production_ml_system.machine_learning_service.training_pipeline 
 )
 from databricks_production_ml_system.utils.constants import (
     CUTOFF_EVAL,
+    DATA_FORMAT,
     DATE_COL,
     PERFORMANCE_EVAL_COLS,
     PERFORMANCE_EVAL_QUERY,
@@ -30,7 +31,7 @@ class PerformanceEvaluation:
         Evaluates model performance
         """
         # Get and filter predictions
-        predictions = spark.read.format("parquet").load(PREDICTIONS_PATH)
+        predictions = spark.read.format(DATA_FORMAT).load(PREDICTIONS_PATH)
         predictions = predictions.filter(
             func.col(PREDICTION_DATE) >= CUTOFF_EVAL
         ).withColumnRenamed(PREDICTION_DATE, DATE_COL)

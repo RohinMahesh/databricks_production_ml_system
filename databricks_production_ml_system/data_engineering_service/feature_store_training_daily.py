@@ -1,4 +1,6 @@
+import dlt
 from databricks_production_ml_system.utils.constants import (
+    ARDS_TABLE_NAME,
     CUTOFF,
     DATE_COL,
     OFFINE_TABLE_TRAINING_DESCRIPTION,
@@ -21,8 +23,7 @@ def feature_store_offline_training_update():
     """
     # Load table
     data = (
-        spark.read.format("parquet")
-        .load(RAW_FILE_PATH)
+        dlt.load(ARDS_TABLE_NAME)
         .withColumn(
             "row_number",
             func.row_number().over(
@@ -34,7 +35,6 @@ def feature_store_offline_training_update():
         .where(func.col("row_number") == 1)
         .drop("row_number")
     )
-    data = data.filter(func.col(DATE_COL) >= CUTOFF)
 
     # Insert new records if new labeled data is available
     if len(data.head(1)) > 0:

@@ -3,7 +3,16 @@ from typing import List, Optional
 
 import dlt
 import pyspark.sql.functions as func
-from databricks_production_ml_system.utils.constants import RESCUED_DATA_COLUMN
+from databricks_production_ml_system.utils.constants import (
+    BRONZE_COMMENT,
+    CUSTOMER_COL,
+    DATA_FORMAT,
+    DATE_COL,
+    DLT_TABLE_NAME,
+    RESCUED_DATA_COLUMN,
+    SILVER_COMMENT,
+)
+from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
 
 
 @dataclass
@@ -15,28 +24,26 @@ class CreateDLT:
     :param date_col: date column name
     :param bronze_data_path: path to upstream data
     :param bronze_comment: comment for creation of bronze table
-    :param bronze_customer_number: customer number column name
-    :param silver_table: name of silver table
+    :param customer_col: customer number column name
     :param silver_comment: comment for creation of silver table
     :param cloudfileformat: upstream file format for CDC
     :param keys: primary keys for upserting/deleting
     :param metadatacols: metadata columns to be dropped
     """
 
-    table_name: str
-    date_col: str
-    bronze_data_path: str
-    bronze_comment: str
-    bronze_customer_number: str
-    silver_table: str
-    silver_comment: str
-    cloudfileformat: str = "parquet"
+    table_name: str = DLT_TABLE_NAME
+    date_col: str = DATE_COL
+    bronze_data_path: str = RAW_FILE_PATH
+    bronze_comment: str = BRONZE_COMMENT
+    customer_col: str = CUSTOMER_COL
+    silver_comment: str = SILVER_COMMENT
+    cloudfileformat: str = DATA_FORMAT
     keys: Optional[List[str]] = None
     metadatacols: Optional[List[str]] = None
 
     def __post_init__(self):
         if not self.keys:
-            object.__setattr__(self, "keys", [self.bronze_customer_number])
+            object.__setattr__(self, "keys", [self.customer_col])
         if not self.metadatacols:
             object.__setattr__(self, "metadatacols", [RESCUED_DATA_COLUMN])
 
@@ -77,8 +84,8 @@ class CreateDLT:
             comment=f"Bronze table view {self.table_name}",
         )
         @dlt.expect_or_drop(
-            f"{self.bronze_customer_number}",
-            f"{self.bronze_customer_number} IS NOT NULL",
+            f"{self.customer_col}",
+            f"{self.customer_col} IS NOT NULL",
         )
         @dlt.expect_or_drop(RESCUED_DATA_COLUMN, f"{RESCUED_DATA_COLUMN} IS NULL")
         def bronze_transformation():

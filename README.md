@@ -11,21 +11,23 @@ Below are the core services in this ML system:
 3. MLOps Service
 
 This ML System leverages the following technologies:
-1. PySpark for Data Engineering Services and Data Quality Validation Pipeline
+1. Delta Live Tables for Data Engineering Service and Data Quality Validation Pipeline
 2. Python for ML pipeline development and Drift Detection Pipeline
 3. MLflow for model artifact management
-4. Feature Tables for access to high-quality Analytics and Model Ready Data Sets in low latency
-5. Great Expectations for Data Quality Validation
-6. EvidentlyAI for Drift Detection
+4. Feature Store for access to high-quality Analytics and Model Ready Data Sets in low latency
+5. EvidentlyAI for Drift Detection
 
 ## Data Engineering Service
 
 The Data Engineering Service consists of 3 scheduled pipelines that performs ETL from the upstream data assets into downstream feature tables. In this system, the source-aligned data assets are in a Parquet format and the downstream data assets resulting from these pipelines are stored in a Delta format and in an Azure SQL Server table. 
 
 Details for the Data Engineering Services and its components can be found in the "data_engineering_service" folder: 
-1. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS). This is updated using the following script and is scheduled to run on a daily cadence:
+1. Delta Live Table: following a Medallion Architecture, this component creates a Delta Live Table (DLT) that takes incremental data from upstream Parquet files, performs different expectations/validations for data quality, and creates a DLT for downstream consumption as an Analytics Ready Data Set (ARDS). This is scheduled to run on a daily cadence:
+    - create_data.py: creates upstream incremental data
+    - create_dlt.py: creates downstream ARDS from a DLT
+2. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS) created from the Delta Live Table (DLT). This is updated using the following script and is scheduled to run on a daily cadence:
     - feature_store_training_daily.py
-2. Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is updated using the following script and is scheduled to run on a daily cadence:
+3. Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is updated using the following script and is scheduled to run on a daily cadence:
     - feature_store_training_daily.py
     - online_feature_table_daily.py
 
@@ -40,12 +42,10 @@ Details for the Machine Learning Services and its components can be found in the
 
 ## MLOps Service
 
-The MLOps Service consists of 2 scheduled pipelines that leverages the outputs of the Data Engineering Service and the Machine Learning Service to validate the integrity of the data assets and detect any data drift. The data quality validation and drift detection pipelines will be integrated into downstream CI/CD/CT and alerting functionalities. These pipelines will store HTML artifacts in Blob and DBFS for downstream consumption.
+The MLOps Service consists of 1 scheduled pipelines that leverages the outputs of the Machine Learning Service to detect any data drift and subsequently trigger model retraining. This drift detection pipeline will be integrated into downstream CI/CD/CT and alerting functionalities.
 
 Details for the MLOps Services and its components can be found in the "mlops_service" folder: 
-1. Data Quality Validation Pipeline: upstream data quality validation framework for relevant data assets. This is scheduled to run on a daily cadence.
-    - data_quality_validation.py
-2. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS and trigger model retraining. This is scheduled to run on a monthly cadence.
+1. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS and trigger model retraining. This is scheduled to run on a monthly cadence.
     - drift_detection.py
 
 ## Orchestration

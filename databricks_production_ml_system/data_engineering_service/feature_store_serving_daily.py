@@ -1,4 +1,6 @@
+import dlt
 from databricks_production_ml_system.utils.constants import (
+    ARDS_TABLE_NAME,
     OFFLINE_TABLE_DESCRIPTION_SERVING,
     OFFLINE_TABLE_KEYS,
     OFFLINE_TABLE_PARTITION,
@@ -16,8 +18,8 @@ def feature_store_offline_serving_update():
     """
     Executes daily update of the offline feature table for serving
     """
-    # Get latest CSV file
-    data = spark.read.format("parquet").load(RAW_FILE_PATH)
+    # Load ARDS
+    data = dlt.load(ARDS_TABLE_NAME)
 
     # Update feature table
     update_table(
