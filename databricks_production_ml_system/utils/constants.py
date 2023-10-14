@@ -10,7 +10,6 @@ EXPERIMENT_NAME = ""
 RUN_NAME = ""
 MODEL_NAME = ""
 USER = ""
-FILEPATH = ""
 DATE_COL = "date"
 MLFLOW_PROD_ENV = "Production"
 TARGET_COL = "target"
@@ -44,6 +43,7 @@ OFFLINE_TABLE_SERVING = "serving"
 OFFLINE_TABLE_TRAINING = "training"
 ONLINE_TABLE_SCHEMA = "online"
 ONLINE_TABLE = "serving"
+RESCUED_DATA_COLUMN = "_rescued_data"
 TODAY = datetime.now()
 CUTOFF_TRAIN = TODAY - timedelta(days=730)
 CUTOFF_TRAIN = CUTOFF_TRAIN.strftime("%Y-%m-%d")

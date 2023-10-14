@@ -4,9 +4,9 @@ import numpy as np
 import pyspark.sql.functions as func
 from databricks_production_ml_system.utils.constants import (
     DATE_COL,
-    FILEPATH,
     TARGET_COL,
 )
+from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
 from pyspark.sql.types import (
     DateType,
     DoubleType,
@@ -63,6 +63,6 @@ def generate_random_data(sample_size: str, incremental: True):
         .withColumn("feature3", func.round("feature3", 2))
     )
     if incremental:
-        data.write.mode("append").parquet(FILEPATH)
+        data.write.mode("append").parquet(RAW_FILE_PATH)
     else:
         return data
