@@ -22,10 +22,10 @@ This ML System leverages the following technologies:
 The Data Engineering Service consists of 3 scheduled pipelines that performs ETL from the upstream data assets into downstream feature tables. In this system, the source-aligned data assets are in a Parquet format and the downstream data assets resulting from these pipelines are stored in a Delta format and in an Azure SQL Server table. 
 
 Details for the Data Engineering Services and its components can be found in the "data_engineering_service" folder: 
-1. Delta Live Table: following a Medallion Architecture, this component creates a Delta Live Table (DLT) that takes incremental data from upstream Parquet files, performs different expectations/validations for data quality, and creates a DLT for downstream consumption as an Analytics Ready Data Set (ARDS). This is scheduled to run on a daily cadence:
+1. Delta Live Table: following a Medallion Architecture, this component creates a Delta Live Table (DLT) that takes incremental data from upstream Parquet files, performs different expectations/validations for data quality, and creates a representation for downstream consumption as an Analytics Ready Data Set (ARDS). This is scheduled to run on a daily cadence:
     - create_data.py
     - create_dlt.py
-2. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS) created from the Delta Live Table (DLT). This is updated using the following script and is scheduled to run on a daily cadence:
+2. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS) created from the output of the Delta Live Table (DLT). This is updated using the following script and is scheduled to run on a daily cadence:
     - feature_store_training_daily.py
 3. Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is updated using the following script and is scheduled to run on a daily cadence:
     - feature_store_training_daily.py
