@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import dlt
-import pyspark.sql.functions as func
+
 from databricks_production_ml_system.utils.constants import (
     BRONZE_COMMENT,
     CUSTOMER_COL,
@@ -51,14 +51,16 @@ class CreateDLT:
         """
         Orchestrates DLT creation
         """
-        self.create_bronze_table()
-        self.expectations_and_transformations()
-        self.run_cdc()
-        self.create_silver_table()
+        self._create_bronze_table()
+        self._expectations_and_transformations()
+        self._run_cdc()
+        self._create_silver_table()
 
-    def create_bronze_table(self):
+    def _create_bronze_table(self) -> None:
         """
         Creates Bronze table
+
+        :returns None
         """
 
         @dlt.table(
@@ -74,9 +76,11 @@ class CreateDLT:
                 .load(f"{self.bronze_data_path}/{self.table_name}")
             )
 
-    def expectations_and_transformations(self):
+    def _expectations_and_transformations(self) -> None:
         """
         Enforces data quality constraints and transformations
+
+        :returns None
         """
 
         @dlt.view(
@@ -91,7 +95,7 @@ class CreateDLT:
         def bronze_transformation():
             return dlt.read_stream(f"{self.table_name}_bronze")
 
-    def run_cdc(self):
+    def _run_cdc(self) -> None:
         """
         Runs CDC and upserts incremental changes
 
@@ -102,6 +106,8 @@ class CreateDLT:
             4. sequence_by: duplication flag to get most recent value
             5. apply_as_deletes: DELETE condition
             6. except_column_list: metadata columns to be dropped
+
+        :returns None
         """
         dlt.create_target_table(
             name=f"{self.table_name}_cdc",
@@ -117,9 +123,11 @@ class CreateDLT:
             except_column_list=self.metadatacols,
         )
 
-    def create_silver_table(self):
+    def _create_silver_table(self) -> None:
         """
         Creates Silver table for downstream consumption
+
+        :returns None
         """
 
         @dlt.table(

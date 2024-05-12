@@ -1,15 +1,16 @@
-import pandas as pd
+from typing import Any, Dict
+
 from databricks_production_ml_system.machine_learning_service.training_pipeline import (
     TrainingPipeline,
 )
 from databricks_production_ml_system.utils.constants import BEGINNING, MID
-from databricks_production_ml_system.utils.helperfunctions import (
+from databricks_production_ml_system.utils.helpers import (
     create_drift_report,
     get_drift_data,
 )
 
 
-def drift_detection():
+def drift_detection() -> Dict[str, Any]:
     """
     Creates drift report and evaluates status for model retraining
 

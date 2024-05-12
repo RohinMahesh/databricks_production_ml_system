@@ -1,3 +1,5 @@
+from pyspark.sql.functions import func
+
 from databricks_production_ml_system.utils.constants import (
     ONLINE_TABLE,
     ONLINE_TABLE_DESCRIPTION,
@@ -6,13 +8,14 @@ from databricks_production_ml_system.utils.constants import (
     ONLINE_TABLE_QUERY,
     ONLINE_TABLE_SCHEMA,
 )
-from databricks_production_ml_system.utils.helperfunctions import update_table
-from pyspark.sql.functions import func
+from databricks_production_ml_system.utils.helpers import update_table
 
 
-def feature_store_online_serving_update():
+def feature_store_online_serving_update() -> None:
     """
     Executes daily update of the online feature table for serving
+
+    :returns None
     """
     # Query data
     data = spark.sql(ONLINE_TABLE_QUERY)

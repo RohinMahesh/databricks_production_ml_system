@@ -28,7 +28,7 @@ Details for the Data Engineering Services and its components can be found in the
 2. Offline Feature Table (FT) Pipeline: populates the offline feature store to create the Analytics Ready Data Set (ARDS) created from the output of the Delta Live Table (DLT). This is updated using the following script and is scheduled to run on a daily cadence:
     - feature_store_training_daily.py
 3. Online Feature Table (FT) Pipeline: populates the online feature store to create the Model Ready Data Set (MRDS). This is updated using the following script and is scheduled to run on a daily cadence:
-    - feature_store_training_daily.py
+    - feature_store_serving_daily.py
     - online_feature_table_daily.py
 
 ## Machine Learning Service

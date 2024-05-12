@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from datetime import datetime
 
 import pandas as pd
 from databricks import feature_store
+
 from databricks_production_ml_system.utils.constants import (
     COLS_FOR_REMOVAL,
+    MLFLOW_PROD_ENV,
     MODEL_NAME,
     MODEL_SERVING_QUERY,
     PREDICTION_COLS,
@@ -12,16 +13,16 @@ from databricks_production_ml_system.utils.constants import (
     TODAY,
 )
 from databricks_production_ml_system.utils.file_paths import PREDICTION_PATH
-from databricks_production_ml_system.utils.helperFunctions import load_mlflow
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
+from databricks_production_ml_system.utils.helpers import load_mlflow
 
 
 @dataclass
 class ServingPipeline:
-    def query_and_aggregate(self):
+    """
+    ML pipeline for serving predictions
+    """
+
+    def _query_and_aggregate(self) -> pd.DataFrame:
         """
         Queries and aggregates upstream data for inference
 
@@ -32,15 +33,17 @@ class ServingPipeline:
         data = data.toPandas()
         return data
 
-    def serve_predictions(self):
+    def serve_predictions(self) -> None:
         """
         Loads model artifact from MLflow serves predictions
+
+        :returns None
         """
         # Get data for prediction
-        data = self.query_and_aggregate()
+        data = self._query_and_aggregate()
 
         # Load production model artifact from Mlflow
-        clf = load_mlflow(model_name=MODEL_NAME, stage="Production")
+        clf = load_mlflow(model_name=MODEL_NAME, stage=MLFLOW_PROD_ENV)
 
         # Serve predictions
         todays_date = TODAY.strftime("%Y-%m-%d")

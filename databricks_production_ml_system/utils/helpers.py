@@ -1,35 +1,35 @@
-import ast
-import json
-from dataclasses import dataclass
+import logging
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-import pyspark.sql.functions as func
+import requests
 from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
+from evidently.test_preset import DataDriftTestPreset
+from evidently.test_suite import TestSuite
+from mlflow.models.signature import infer_signature
+from mlflow.tracking import MlflowClient
+from pyspark.sql import DataFrame
+from sklearn.pipeline import Pipeline
+
 from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLS,
-    DATE_COL,
     EXPERIMENT_NAME,
+    HEADERS,
     HYPERPARAMS,
+    MLFLOW_PROD_ENV,
     MODEL_NAME,
     NUMERICAL_COLS,
     ONLINE_STORE,
     ONLINE_TABLE,
     ONLINE_TABLE_SCHEMA,
     RUN_NAME,
-    TARGET,
+    URL,
     USER,
 )
-from databricks_production_ml_system.utils.file_paths import HTML_DIRECTORY
-from evidently.test_preset import DataDriftTestPreset
-from evidently.test_suite import TestSuite
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from pyspark.sql import DataFrame as SparkDataFrame
 
 
 def register_mlflow(
@@ -40,8 +40,8 @@ def register_mlflow(
     model_name: str = MODEL_NAME,
     user: str = USER,
     parameters: dict = HYPERPARAMS,
-    stage: str = "Staging",
-):
+    stage: str = MLFLOW_PROD_ENV,
+) -> None:
     """
     Register ML model artifacts in MLflow
 
@@ -111,15 +111,23 @@ def register_mlflow(
     )
 
 
-def load_mlflow(model_name: str, stage: str):
+def load_mlflow(model_name: str = MODEL_NAME, stage: str = MLFLOW_PROD_ENV) -> Pipeline:
     """
     Gets production model from MLflow
 
-    :param model_name: name of your model
-    :param stage: MLflow stage
+    :param model_name: name of your model,
+        defaults to MODEL_NAME
+    :param stage: MLflow stage,
+        defaults to "Production"
     :returns model: model artifact
     """
-    model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
+    try:
+        model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
+    except mlflow.exceptions.MlflowException as e:
+        logger.info(f"Cannot find model {model_name} at stage {stage}.")
+        logger.info("Triggering model retraining")
+        TrainingPipeline().train_and_register_model()
+        model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
     return model
 
 
@@ -128,7 +136,7 @@ def publish_table(
     table: str = ONLINE_TABLE,
     online_store: AzureSqlServerSpec = ONLINE_STORE,
     mode: str = "overwrite",
-):
+) -> None:
     """
     Publishes online feature table
 
@@ -147,7 +155,7 @@ def publish_table(
 
 
 def update_table(
-    data: SparkDataFrame,
+    data: DataFrame,
     description: str,
     schema: str,
     table: str,
@@ -155,7 +163,7 @@ def update_table(
     partition_columns: List[str],
     mode: str = "overwrite",
     online: bool = False,
-):
+) -> None:
     """
     Updates feature table
 
@@ -195,7 +203,7 @@ def create_drift_report(
     cat_stattest: str = "psi",
     num_stattest_threshold: float = 0.15,
     cat_stattest_threshold: float = 0.15,
-):
+) -> Dict[str, Any]:
     """
     Create drift report
 
@@ -257,7 +265,7 @@ def create_drift_report(
     return drift_report
 
 
-def get_drift_data(beginning, mid):
+def get_drift_data(beginning, mid) -> pd.DataFrame:
     """
     Generates reference and comparison data using 14 day window
 
@@ -266,7 +274,6 @@ def get_drift_data(beginning, mid):
     :returns comparison_data: data used for comparison
     :returns reference_data: data used for reference
     """
-
     # Get data for comparison
     today = datetime.now()
     cutoff = today - timedelta(days=60)
@@ -283,3 +290,43 @@ def get_drift_data(beginning, mid):
     reference_data = data.filter(data.Date >= mid.strftime("%Y-%m-%d")).toPandas()
 
     return comparison_data, reference_data
+
+
+def check_data_exists(f_path: str) -> bool:
+    """
+    Checks whether data exists in provided path
+
+    :param f_file: path to data
+    :returns whether data exists in f_path or not
+    """
+    try:
+        files = dbutils.fs.ls(f_path)
+        if files:
+            return True
+        else:
+            return False
+    except Exception as e:
+        logging.info(f"An unexpected error occurred: {e}")
+        return False
+
+
+def create_workflow(
+    workflow_configs: Dict[str, Any],
+    pipeline_name: str,
+    url: str = URL,
+    headers: Dict[str, Any] = HEADERS,
+) -> None:
+    """
+    Creates and posts Databricks Workflow
+
+    :param workflow_configs: workflow configurations
+    :param pipeline_name: workflow pipeline name
+    :param url: endpoint URL
+    :param headers: API headers
+    """
+    response = requests.post(url, headers=headers, json=workflow_configs)
+    if response.status_code == 200:
+        logger.info(f"Job for {pipeline_name} created successfully!")
+        logger.info(f"Job ID: {response.json()['job_id']}")
+    else:
+        logger.info(f"Failed to create job for {pipeline_name}: {response.json()}")

@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import pandas as pd
 import pyspark.sql.functions as func
 from databricks import feature_store
+from sklearn.metrics import accuracy_score
+
 from databricks_production_ml_system.machine_learning_service.training_pipeline import (
     TrainingPipeline,
 )
@@ -14,10 +16,10 @@ from databricks_production_ml_system.utils.constants import (
     PERFORMANCE_EVAL_QUERY,
     PREDICTION_DATE,
     PREDICTIONS_PATH,
+    TARGET_COL,
     THRESHOLD_RETRAIN,
 )
 from databricks_production_ml_system.utils.file_paths import PREDICTIONS_PATH
-from sklearn.metrics import accuracy_score
 
 
 @dataclass
@@ -26,9 +28,11 @@ class PerformanceEvaluation:
     Evaluates performance and triggers model retraining based on SLA(s)
     """
 
-    def evaluate(self):
+    def evaluate(self) -> None:
         """
         Evaluates model performance
+
+        :returns None
         """
         # Get and filter predictions
         predictions = spark.read.format(DATA_FORMAT).load(PREDICTIONS_PATH)
@@ -44,7 +48,7 @@ class PerformanceEvaluation:
 
         # Calculate performance
         performance = accuracy_score(
-            to_evaluate["target"].tolist(), to_evaluate["prediction"].tolist()
+            to_evaluate[TARGET_COL].tolist(), to_evaluate["prediction"].tolist()
         )
 
         # Trigger retraining

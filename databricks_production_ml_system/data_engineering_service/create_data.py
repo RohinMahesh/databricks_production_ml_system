@@ -1,12 +1,9 @@
 from datetime import datetime
 
+import logger
 import numpy as np
 import pyspark.sql.functions as func
-from databricks_production_ml_system.utils.constants import (
-    DATE_COL,
-    TARGET_COL,
-)
-from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
+from pyspark.sql import DataFrame
 from pyspark.sql.types import (
     DateType,
     DoubleType,
@@ -16,13 +13,16 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from databricks_production_ml_system.utils.constants import DATE_COL, TARGET_COL
+from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
+from databricks_production_ml_system.utils.helperFunctions import check_data_exists
 
-def generate_random_data(sample_size: str, incremental: True):
+
+def generate_random_data(sample_size: int = 10000) -> None:
     """
     Generates and saves random data of given sample size
 
     :param sample_size: number of rows in randomly generated data
-    :param incremental: whether the data is incremental
     :returns None
     """
     # Define schema
@@ -45,7 +45,7 @@ def generate_random_data(sample_size: str, incremental: True):
         ).tolist(),
         "feature1": np.random.uniform(low=0, high=75, size=sample_size).tolist(),
         "feature2": np.random.uniform(low=0, high=30, size=sample_size).tolist(),
-        "feature3": np.random.normal(loc=3, scale==5, size=sample_size).tolist(),
+        "feature3": np.random.normal(loc=3, scale=5, size=sample_size).tolist(),
         "feature4": np.random.choice(
             a=["Low", "Medium", "High", "Unknown"],
             size=sample_size,
@@ -62,7 +62,8 @@ def generate_random_data(sample_size: str, incremental: True):
         .withColumn("feature2", func.round("feature2", 2))
         .withColumn("feature3", func.round("feature3", 2))
     )
-    if incremental:
+    exists = check_data_exists(f_path=RAW_FILE_PATH)
+    if exists:
         data.write.mode("append").parquet(RAW_FILE_PATH)
     else:
-        return data
+        logger.warn("Unable to write data")
