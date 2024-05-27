@@ -24,6 +24,18 @@ While monitoring is a powerful method for covariate shifts, it is vital to have 
 
 In this project, we focus on monitoring covariate shifts in our input feature space by using the EvidentlyAI library.
 
+## MLOps Service
+
+The MLOps Service consists of 1 scheduled pipelines that leverages the outputs of the Machine Learning Service to detect any data drift and subsequently trigger model retraining. This drift detection pipeline will be integrated into downstream CI/CD/CT and alerting functionalities.
+
+Details for the MLOps Services and its components can be found in the "mlops_service" folder: 
+1. Drift Detection: drift detection framework to calculate distributional shifts in our ARDS and trigger model retraining. This is scheduled to run on a monthly cadence.
+    - drift_detection.py
+
+## Deployment and Orchestration
+
+This ML system consists of various pipelines that are orchestrated using Databricks Workflows. For full control over your jobs, test converge, and CI/CD/CT, it is recommended to leverage Azure DevOps. It is also recommended to utilize the GitHub Databricks integration for orchestration of the Databricks Workflows/Azure DevOps Pipelines. You can find all deployment related artifacts under the deployment directory.
+
 ## References
 
 Great Expectations, https://docs.greatexpectations.io/docs/, 2022
@@ -33,4 +45,3 @@ Halford, Max. River, https://riverml.xyz/0.14.0/, 2022
 Huyen, Chip. Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O'Reilly Media, Inc., 2022. 
 
 Vowpal Wabbit, https://vowpalwabbit.org, 2022
-
