@@ -1,6 +1,6 @@
 # Drift Monitoring
 
-![Screenshot](images/evidently_monitoring.png)
+![Screenshot](docs/images/evidently_monitoring.png)
 
 ## Motiviation
 
