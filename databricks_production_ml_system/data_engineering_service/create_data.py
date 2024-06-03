@@ -15,7 +15,7 @@ from pyspark.sql.types import (
 
 from databricks_production_ml_system.utils.constants import DATE_COL, TARGET_COL
 from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
-from databricks_production_ml_system.utils.helperFunctions import check_data_exists
+from databricks_production_ml_system.utils.helpers import check_data_exists
 
 
 def generate_random_data(sample_size: int = 10000) -> None:
@@ -62,8 +62,8 @@ def generate_random_data(sample_size: int = 10000) -> None:
         .withColumn("feature2", func.round("feature2", 2))
         .withColumn("feature3", func.round("feature3", 2))
     )
+
+    # Save data
     exists = check_data_exists(f_path=RAW_FILE_PATH)
-    if exists:
-        data.write.mode("append").parquet(RAW_FILE_PATH)
-    else:
-        logger.warn("Unable to write data")
+    write_mode = "append" if exists else "overwrite"
+    data.write.mode(write_mode).parquet(RAW_FILE_PATH)
