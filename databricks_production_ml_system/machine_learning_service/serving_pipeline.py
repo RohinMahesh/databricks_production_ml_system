@@ -13,7 +13,7 @@ from databricks_production_ml_system.utils.constants import (
     TODAY,
 )
 from databricks_production_ml_system.utils.file_paths import PREDICTION_PATH
-from databricks_production_ml_system.utils.helpers import load_mlflow
+from databricks_production_ml_system.utils.helpers import check_data_exists, load_mlflow
 
 
 @dataclass
@@ -56,4 +56,6 @@ class ServingPipeline:
 
         # Store predictions in Blob
         data = data[PREDICTION_COLS]
-        data.write.mode("append").parquet(PREDICTION_PATH)
+        exists = check_data_exists(f_path=PREDICTION_PATH)
+        write_mode = "append" if exists else "overwrite"
+        data.write.mode(write_mode).parquet(PREDICTION_PATH)

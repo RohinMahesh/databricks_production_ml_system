@@ -44,7 +44,7 @@ class PerformanceEvaluation:
         fs = feature_store.FeatureStoreClient()
         data = spark.sql(PERFORMANCE_EVAL_QUERY)
         data = data.select(PERFORMANCE_EVAL_COLS)
-        to_evaluate = data.join(predictions, on=DATE_COL, how="left").toPandas()
+        to_evaluate = data.join(predictions, on=DATE_COL, how="inner").toPandas()
 
         # Calculate performance
         performance = accuracy_score(
