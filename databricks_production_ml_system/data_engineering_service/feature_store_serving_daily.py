@@ -19,8 +19,6 @@ def feature_store_offline_serving_update() -> None:
 
     :returns None
     """
-    # Load ARDS
-    data = dlt.load(ARDS_TABLE_NAME)
 
     # Initialize Feature Store client
     fs = feature_store.FeatureStoreClient()
@@ -31,7 +29,7 @@ def feature_store_offline_serving_update() -> None:
 
         # Update feature table
         update_table(
-            data=data,
+            data=existing_table,
             description=OFFLINE_TABLE_DESCRIPTION_SERVING,
             schema=OFFLINE_TABLE_SCHEMA,
             table=OFFLINE_TABLE_SERVING,
@@ -39,6 +37,9 @@ def feature_store_offline_serving_update() -> None:
             partition_columns=OFFLINE_TABLE_PARTITION,
         )
     except AnalysisException:
+        # Load ARDS
+        data = dlt.load(ARDS_TABLE_NAME)
+
         # If table does not exist, create it
         publish_table(
             data=data,

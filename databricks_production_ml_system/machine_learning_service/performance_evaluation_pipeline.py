@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import pyspark.sql.functions as func
 from databricks import feature_store
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 
 from databricks_production_ml_system.machine_learning_service.training_pipeline import (
     TrainingPipeline,
@@ -47,7 +47,7 @@ class PerformanceEvaluation:
         to_evaluate = data.join(predictions, on=DATE_COL, how="inner").toPandas()
 
         # Calculate performance
-        performance = accuracy_score(
+        performance = f1_score(
             to_evaluate[TARGET_COL].tolist(), to_evaluate["prediction"].tolist()
         )
 
