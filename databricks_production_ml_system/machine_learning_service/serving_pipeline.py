@@ -12,15 +12,20 @@ from databricks_production_ml_system.utils.constants import (
     PREDICTION_DATE,
     TODAY,
 )
-from databricks_production_ml_system.utils.file_paths import PREDICTION_PATH
+from databricks_production_ml_system.utils.file_paths import PREDICTIONS_PATH
 from databricks_production_ml_system.utils.helpers import check_data_exists, load_mlflow
+from pyspark.sql import SparkSession
 
 
 @dataclass
 class ServingPipeline:
     """
     ML pipeline for serving predictions
+
+    :param spark: SparkSession object
     """
+
+    spark: SparkSession = None
 
     def _query_and_aggregate(self) -> pd.DataFrame:
         """
@@ -29,7 +34,11 @@ class ServingPipeline:
         :returns data: MRDS for inference
         """
         fs = feature_store.FeatureStoreClient()
-        data = spark.sql(MODEL_SERVING_QUERY)
+        data = (
+            self.spark.sql(MODEL_SERVING_QUERY)
+            if self.spark
+            else spark.sql(MODEL_SERVING_QUERY)
+        )
         data = data.toPandas()
         return data
 
@@ -47,7 +56,7 @@ class ServingPipeline:
 
         # Serve predictions
         todays_date = TODAY.strftime("%Y-%m-%d")
-        del data[COLS_FOR_REMOVAL]
+        data = data.drop(columns=COLS_FOR_REMOVAL)
         preds = clf.predict(data)
         data["prediction"] = preds
 
@@ -56,6 +65,11 @@ class ServingPipeline:
 
         # Store predictions in Blob
         data = data[PREDICTION_COLS]
-        exists = check_data_exists(f_path=PREDICTION_PATH)
+        spark_df = (
+            self.spark.createDataFrame(data)
+            if self.spark
+            else spark.createDataFrame(data)
+        )
+        exists = check_data_exists(f_path=PREDICTIONS_PATH)
         write_mode = "append" if exists else "overwrite"
-        data.write.mode(write_mode).parquet(PREDICTION_PATH)
+        spark_df.write.mode(write_mode).parquet(PREDICTIONS_PATH)

@@ -1,9 +1,8 @@
 from datetime import datetime
 
-import logger
 import numpy as np
 import pyspark.sql.functions as func
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import (
     DateType,
     DoubleType,
@@ -18,11 +17,12 @@ from databricks_production_ml_system.utils.file_paths import RAW_FILE_PATH
 from databricks_production_ml_system.utils.helpers import check_data_exists
 
 
-def generate_random_data(sample_size: int = 10000) -> None:
+def generate_random_data(sample_size: int = 10000, spark: SparkSession = None) -> None:
     """
     Generates and saves random data of given sample size
 
     :param sample_size: number of rows in randomly generated data
+    :param spark: SparkSession object
     :returns None
     """
     # Define schema
@@ -66,4 +66,7 @@ def generate_random_data(sample_size: int = 10000) -> None:
     # Save data
     exists = check_data_exists(f_path=RAW_FILE_PATH)
     write_mode = "append" if exists else "overwrite"
+    import logging
+
+    logging.info(f"directory: {RAW_FILE_PATH}")
     data.write.mode(write_mode).parquet(RAW_FILE_PATH)

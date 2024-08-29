@@ -8,13 +8,9 @@ import pandas as pd
 import requests
 from databricks import feature_store
 from databricks.feature_store.online_store_spec import AzureSqlServerSpec
-from evidently.test_preset import DataDriftTestPreset
-from evidently.test_suite import TestSuite
-from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
-from pyspark.sql import DataFrame
-from sklearn.pipeline import Pipeline
-
+from databricks_production_ml_system.machine_learning_service.training_pipeline import (
+    TrainingPipeline,
+)
 from databricks_production_ml_system.utils.constants import (
     CATEGORICAL_COLS,
     EXPERIMENT_NAME,
@@ -30,6 +26,12 @@ from databricks_production_ml_system.utils.constants import (
     URL,
     USER,
 )
+from evidently.test_preset import DataDriftTestPreset
+from evidently.test_suite import TestSuite
+from mlflow.models.signature import infer_signature
+from mlflow.tracking import MlflowClient
+from pyspark.sql import DataFrame, SparkSession
+from sklearn.pipeline import Pipeline
 
 
 def register_mlflow(
@@ -124,8 +126,8 @@ def load_mlflow(model_name: str = MODEL_NAME, stage: str = MLFLOW_PROD_ENV) -> P
     try:
         model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
     except mlflow.exceptions.MlflowException as e:
-        logger.info(f"Cannot find model {model_name} at stage {stage}.")
-        logger.info("Triggering model retraining")
+        logging.info(f"Cannot find model {model_name} at stage {stage}.")
+        logging.info("Triggering model retraining")
         TrainingPipeline().train_and_register_model()
         model = mlflow.sklearn.load_model(f"models:/{model_name}/{stage}")
     return model
@@ -163,6 +165,7 @@ def update_table(
     partition_columns: List[str],
     mode: str = "overwrite",
     online: bool = False,
+    spark: SparkSession = None,
 ) -> None:
     """
     Updates feature table
@@ -177,6 +180,8 @@ def update_table(
         defaults to "overwrite"
     :param online: optional parameter for publishing table,
         defaults to False
+    :param spark: SparkSession object,
+        defaults to None
     :returns None
     """
     fs = feature_store.FeatureStoreClient()
@@ -259,18 +264,22 @@ def create_drift_report(
         ]["detected"]
 
     # Engineer any_drift for downstream orchestration
+    status = list(set(drift_report.values()))
     drift_report["any_drift"] = (
-        False if data_drift["summary"]["all_passed"] == True else True
+        False if len(status) == 1 and status[0] == False else True
     )
     return drift_report
 
 
-def get_drift_data(beginning, mid) -> pd.DataFrame:
+def get_drift_data(
+    beginning: str, mid: str, spark: SparkSession = None
+) -> pd.DataFrame:
     """
     Generates reference and comparison data using 14 day window
 
     :param beginning: beginning time window to filter/extract data
     :param mid: middle time window to filter/extract data
+    :param spark: SparkSession object
     :returns comparison_data: data used for comparison
     :returns reference_data: data used for reference
     """
@@ -292,19 +301,17 @@ def get_drift_data(beginning, mid) -> pd.DataFrame:
     return comparison_data, reference_data
 
 
-def check_data_exists(f_path: str) -> bool:
+def check_data_exists(f_path: str, dbutils: None | object = None) -> bool:
     """
     Checks whether data exists in provided path
 
     :param f_file: path to data
+    :param dbutils: dbutils object
     :returns whether data exists in f_path or not
     """
     try:
         files = dbutils.fs.ls(f_path)
-        if files:
-            return True
-        else:
-            return False
+        return bool(files)
     except Exception as e:
         logging.info(f"An unexpected error occurred: {e}")
         return False
@@ -326,7 +333,7 @@ def create_workflow(
     """
     response = requests.post(url, headers=headers, json=workflow_configs)
     if response.status_code == 200:
-        logger.info(f"Job for {pipeline_name} created successfully!")
-        logger.info(f"Job ID: {response.json()['job_id']}")
+        logging.info(f"Job for {pipeline_name} created successfully!")
+        logging.info(f"Job ID: {response.json()['job_id']}")
     else:
-        logger.info(f"Failed to create job for {pipeline_name}: {response.json()}")
+        logging.info(f"Failed to create job for {pipeline_name}: {response.json()}")

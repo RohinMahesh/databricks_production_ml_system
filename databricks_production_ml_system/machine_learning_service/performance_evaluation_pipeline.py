@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
+from pyspark.sql import SparkSession
 import pyspark.sql.functions as func
 from databricks import feature_store
 from sklearn.metrics import f1_score
@@ -15,7 +16,6 @@ from databricks_production_ml_system.utils.constants import (
     PERFORMANCE_EVAL_COLS,
     PERFORMANCE_EVAL_QUERY,
     PREDICTION_DATE,
-    PREDICTIONS_PATH,
     TARGET_COL,
     THRESHOLD_RETRAIN,
 )
@@ -26,7 +26,11 @@ from databricks_production_ml_system.utils.file_paths import PREDICTIONS_PATH
 class PerformanceEvaluation:
     """
     Evaluates performance and triggers model retraining based on SLA(s)
+
+    :param spark: SparkSession object
     """
+
+    spark: SparkSession = None
 
     def evaluate(self) -> None:
         """
@@ -35,20 +39,30 @@ class PerformanceEvaluation:
         :returns None
         """
         # Get and filter predictions
-        predictions = spark.read.format(DATA_FORMAT).load(PREDICTIONS_PATH)
+        predictions = (
+            self.spark.read.format(DATA_FORMAT).load(PREDICTIONS_PATH)
+            if self.spark
+            else spark.read.format(DATA_FORMAT).load(PREDICTIONS_PATH)
+        )
         predictions = predictions.filter(
             func.col(PREDICTION_DATE) >= CUTOFF_EVAL
         ).withColumnRenamed(PREDICTION_DATE, DATE_COL)
 
         # Load labels
         fs = feature_store.FeatureStoreClient()
-        data = spark.sql(PERFORMANCE_EVAL_QUERY)
+        data = (
+            self.spark.sql(PERFORMANCE_EVAL_QUERY)
+            if self.spark
+            else spark.sql(PERFORMANCE_EVAL_QUERY)
+        )
         data = data.select(PERFORMANCE_EVAL_COLS)
         to_evaluate = data.join(predictions, on=DATE_COL, how="inner").toPandas()
 
         # Calculate performance
-        performance = f1_score(
-            to_evaluate[TARGET_COL].tolist(), to_evaluate["prediction"].tolist()
+        performance = float(
+            f1_score(
+                to_evaluate[TARGET_COL].tolist(), to_evaluate["prediction"].tolist()
+            )
         )
 
         # Trigger retraining

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
+from pyspark.sql import SparkSession
 import pyspark.sql.functions as func
 from databricks import feature_store
 from sklearn.compose import ColumnTransformer
@@ -9,19 +10,22 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from databricks_production_ml_system.utils.constants import (
-    CATEGORICAL_COLUMNS,
+    CATEGORICAL_COLS,
     HYPERPARAMS,
     MODEL_TRAINING_QUERY,
     TARGET_COL,
 )
-from databricks_production_ml_system.utils.helpers import register_mlflow
 
 
 @dataclass
 class TrainingPipeline:
     """
     Trains and serializes ML Pipeline
+
+    :param spark: SparkSession object
     """
+
+    spark: SparkSession = None
 
     def _query_and_aggregate(self) -> None:
         """
@@ -31,7 +35,11 @@ class TrainingPipeline:
         """
         # Query data from offline feature table
         fs = feature_store.FeatureStoreClient()
-        data = spark.sql(MODEL_TRAINING_QUERY)
+        data = (
+            self.spark.sql(MODEL_TRAINING_QUERY)
+            if self.spark
+            else spark.sql(MODEL_TRAINING_QUERY)
+        )
 
         # Engineer features
         self.feature_space = (
@@ -56,6 +64,8 @@ class TrainingPipeline:
 
         :returns None
         """
+        from databricks_production_ml_system.utils.helpers import register_mlflow
+
         # Get feature space and target variable
         self._query_and_aggregate()
 
@@ -65,7 +75,7 @@ class TrainingPipeline:
         )
         feature_extractor = ColumnTransformer(
             transformers=[
-                ("categorical", categorical_transformer, CATEGORICAL_COLUMNS),
+                ("categorical", categorical_transformer, CATEGORICAL_COLS),
             ],
             remainder="passthrough",
         )

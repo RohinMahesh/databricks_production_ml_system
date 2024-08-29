@@ -84,7 +84,7 @@ HYPERPARAMS = {
     "C": 1.0,
     "fit_intercept": True,
     "intercept_scaling": 1,
-    "class_weights": None,
+    "class_weight": None,
     "random_state": 123,
     "solver": "lbfgs",
     "max_iter": 100,

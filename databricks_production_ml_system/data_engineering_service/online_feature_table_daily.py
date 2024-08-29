@@ -1,4 +1,5 @@
-from pyspark.sql.functions import func
+from pyspark.sql import SparkSession
+import pyspark.sql.functions as func
 
 from databricks_production_ml_system.utils.constants import (
     ONLINE_TABLE,
@@ -11,10 +12,11 @@ from databricks_production_ml_system.utils.constants import (
 from databricks_production_ml_system.utils.helpers import update_table
 
 
-def feature_store_online_serving_update() -> None:
+def feature_store_online_serving_update(spark: SparkSession = None) -> None:
     """
     Executes daily update of the online feature table for serving
 
+    :param spark: SparkSession object
     :returns None
     """
     # Query data
@@ -27,12 +29,17 @@ def feature_store_online_serving_update() -> None:
     )
 
     # Update feature table
-    update_table(
-        data=online_features,
-        description=ONLINE_TABLE_DESCRIPTION,
-        schema=ONLINE_TABLE_SCHEMA,
-        table=ONLINE_TABLE,
-        keys=ONLINE_TABLE_KEYS,
-        partition_columns=ONLINE_TABLE_PARTITION,
-        online=True,
-    )
+    update_table_args = {
+        "data": online_features,
+        "description": ONLINE_TABLE_DESCRIPTION,
+        "schema": ONLINE_TABLE_SCHEMA,
+        "table": ONLINE_TABLE,
+        "keys": ONLINE_TABLE_KEYS,
+        "partition_columns": ONLINE_TABLE_PARTITION,
+        "online": True,
+    }
+    if spark:
+        update_table_args["spark"] = spark
+
+    # Update feature table
+    update_table(**update_table_args)
