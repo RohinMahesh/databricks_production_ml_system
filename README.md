@@ -1,4 +1,5 @@
 # Databricks Production ML System
+![Build Status](https://github.com/RohinMahesh/databricks_production_ml_system/actions/workflows/ci.yml/badge.svg)
 
 ![Screenshot](databricks_production_ml_system/docs/images/architecture_diagram.jpg)
 
