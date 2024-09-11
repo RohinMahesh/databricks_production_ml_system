@@ -1,21 +1,9 @@
-import os
-import sys
-
-repo_path = os.path.abspath(
-    "/Users/rohinmahesh/Documents/GitHub/databricks_production_ml_system"
-)
-
-if repo_path not in sys.path:
-    sys.path.append(repo_path)
-
 import sys
 from unittest import mock
 
 sys.modules["dlt"] = mock.Mock()
 
-import sys
 import tempfile
-from unittest import mock
 
 import pytest
 from databricks_production_ml_system.data_engineering_service.feature_store_training_daily import (
